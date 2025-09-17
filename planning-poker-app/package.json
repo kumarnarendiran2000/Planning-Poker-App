@@ -1,0 +1,56 @@
+{
+  "name": "planning-poker-app",
+  "version": "1.0.0",
+  "description": "Production-ready real-time Planning Poker application for distributed agile teams",
+  "license": "MIT",
+  "author": "Kumar Narendiran <kumarnarendiran2000@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kumarnarendiran2000/Planning-Poker-App.git"
+  },
+  "homepage": "https://github.com/kumarnarendiran2000/Planning-Poker-App#readme",
+  "keywords": [
+    "planning-poker",
+    "agile",
+    "estimation",
+    "scrum",
+    "react",
+    "firebase",
+    "real-time",
+    "collaboration"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "deploy": "pnpm build && firebase deploy",
+    "deploy:hosting": "pnpm build && firebase deploy --only hosting",
+    "deploy:database": "firebase deploy --only database"
+  },
+  "dependencies": {
+    "firebase": "^12.2.1",
+    "prop-types": "^15.8.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-hot-toast": "^2.6.0",
+    "react-router-dom": "^7.8.2",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "@tailwindcss/postcss7-compat": "^2.2.17",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^5.0.0",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^9.33.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.4.17",
+    "vite": "^7.1.2"
+  }
+}

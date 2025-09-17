@@ -1,0 +1,30 @@
+{
+  "rules": {
+    "rooms": {
+      ".read": true,
+      "$roomId": {
+        ".read": true,
+        ".write": true,
+        ".validate": "$roomId.length >= 4 && $roomId.length <= 50",
+        "participants": {
+          "$participantId": {
+            ".validate": "newData.hasChildren(['name']) && newData.child('name').isString() && newData.child('name').val().length >= 1 && newData.child('name').val().length <= 50"
+          }
+        },
+        "revealed": {
+          ".validate": "newData.isBoolean()"
+        },
+        "status": {
+          ".validate": "newData.isString()"
+        },
+        "resetNotification": {
+          ".validate": "newData.hasChildren(['timestamp']) && newData.child('timestamp').isNumber()"
+        }
+      }
+    },
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}

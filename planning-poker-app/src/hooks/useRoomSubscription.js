@@ -1,0 +1,170 @@
+import { useEffect, useRef } from 'react';
+import RoomService from '../services/roomService';
+import * as StorageUtils from '../utils/localStorage';
+import enhancedToast from '../utils/enhancedToast.jsx';
+
+/**
+ * Hook for managing Firebase room subscriptions
+ * Handles real-time updates from Firebase for room data
+ */
+export const useRoomSubscription = (roomId, state, navigation) => {
+  const { roomExists, sessionId, isHost, setParticipants, setRevealed, setCountdown, setResetState } = state;
+  const { navigate } = navigation;
+  const lastResetTimestamp = useRef(null);
+
+  useEffect(() => {
+    if (!roomExists || !sessionId) return;
+    
+    let unsubscribe = null;
+    let isComponentMounted = true;
+    
+    // Subscribe to room updates
+    unsubscribe = RoomService.subscribeToRoom(roomId, (snapshot) => {
+      if (!isComponentMounted) return;
+      
+      if (!snapshot.exists()) {
+        // Room was deleted from database
+        
+        // Check if the current user deleted the room themselves
+        const deletedRoomId = StorageUtils.getRoomItem('deletingRoom', roomId);
+        if (deletedRoomId !== roomId) {
+          // Clear room data immediately
+          StorageUtils.clearRoomData(roomId);
+          
+          // Show toast with a brief delay before redirect to ensure it renders
+          enhancedToast.error('This room has been deleted by the host. Thank you for participating!');
+          
+          // Small delay to ensure toast renders before navigation
+          setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 500); // 500ms delay to let toast show
+        } else {
+          // User deleted it themselves, just navigate
+          navigate('/', { replace: true });
+        }
+        return;
+      }
+      
+      const roomData = snapshot.val();
+      
+      // Check if room is marked as deleting
+      if (roomData.status === 'deleting') {
+        // Check if the current user is deleting the room
+        const deletedRoomId = StorageUtils.getRoomItem('deletingRoom', roomId);
+        if (deletedRoomId !== roomId) {
+          // Force unsubscribe from this room
+          if (unsubscribe) {
+            unsubscribe();
+            unsubscribe = null;
+          }
+          
+          // Clear any room-specific data
+          StorageUtils.clearRoomData(roomId);
+          
+          // Show toast with a brief delay before redirect to ensure it renders
+          enhancedToast.warning('This room is being deleted by the host. Thank you for participating!');
+          
+          // Small delay to ensure toast renders before navigation
+          setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 500); // 500ms delay to let toast show
+        }
+        return;
+      }
+      
+      // Update participants data and check if current user was removed
+      setParticipants(prevParticipants => {
+        const newParticipants = roomData.participants || {};
+        
+        // Check if current user was removed by host
+        const currentSessionId = StorageUtils.getSessionId(roomId);
+        const currentIsHost = StorageUtils.isUserHost(roomId);
+        
+        if (currentSessionId && !currentIsHost) {
+          const wasInRoom = prevParticipants[currentSessionId];
+          const stillInRoom = newParticipants[currentSessionId];
+          
+          // If user was in room before but not anymore, and this isn't the initial load
+          if (wasInRoom && !stillInRoom && Object.keys(prevParticipants).length > 0) {
+            // User was removed by host
+            enhancedToast.error('You have been removed by the host. Redirecting to home page...');
+            
+            // Clear localStorage immediately
+            StorageUtils.clearRoomData(roomId);
+            
+            // Redirect after short delay to show message
+            setTimeout(() => {
+              navigate('/', { replace: true });
+            }, 2000);
+            
+            return prevParticipants; // Don't update state, we're leaving anyway
+          }
+        }
+        
+        // Deep comparison to avoid unnecessary re-renders
+        if (JSON.stringify(prevParticipants) === JSON.stringify(newParticipants)) {
+          return prevParticipants;
+        }
+        
+        return newParticipants;
+      });
+      
+      setRevealed(roomData.revealed || false);
+      
+      // Update countdown status
+      setCountdown(roomData.countdown || null);
+      
+      // Update reset state
+      setResetState(roomData.resetState || null);
+      
+      // Check for reset notifications (only for non-host participants)
+      if (roomData.resetNotification && !isHost) {
+        const { timestamp, notified } = roomData.resetNotification;
+        
+        // Only show notification if it's new and hasn't been shown yet
+        if (timestamp && 
+            timestamp !== lastResetTimestamp.current && 
+            !notified) {
+          
+          lastResetTimestamp.current = timestamp;
+          
+          // Show toast notification to participant
+          enhancedToast.info('The votes have been reset by host');
+          
+          // Clear the notification after showing it
+          setTimeout(() => {
+            RoomService.clearResetNotification(roomId).catch(error => {
+              console.error('Error clearing reset notification:', error);
+            });
+          }, 1000); // Small delay to ensure all participants get the notification
+        }
+      }
+    });
+    
+    // Cleanup function
+    return () => {
+      isComponentMounted = false;
+      
+      if (unsubscribe) {
+        unsubscribe();
+      }
+      
+      // Remove the deleting marker
+      StorageUtils.removeRoomItem('deletingRoom', roomId);
+      
+      // If this was the host, check if the room is now empty and should be deleted
+      // (Don't force delete on browser close - host might want to rejoin)
+      if (isHost && roomId) {
+        RoomService.deleteRoomIfEmpty(roomId)
+          .then(wasDeleted => {
+            if (wasDeleted) {
+              // Room was deleted due to being empty
+            }
+          })
+          .catch(error => {
+            console.error('Error checking if room should be deleted:', error);
+          });
+      }
+    };
+  }, [roomId, roomExists, sessionId, isHost, navigate, setParticipants, setRevealed, setCountdown, setResetState]);
+};
