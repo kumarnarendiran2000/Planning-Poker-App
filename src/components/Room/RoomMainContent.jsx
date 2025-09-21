@@ -36,9 +36,9 @@ const RoomMainContent = ({
   const isParticipant = currentUser ? isParticipantFromFirebase : isParticipantFromStorage;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 lg:gap-6 min-h-0 flex-1 lg:h-full overflow-hidden">
+    <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 lg:gap-6 min-h-[600px] flex-1">
       {/* Participants List - Height matches right side */}
-      <div className="lg:flex-shrink-0 flex flex-col min-h-0 lg:h-full overflow-hidden">
+      <div className="lg:flex-shrink-0 flex flex-col min-h-[400px] lg:min-h-[600px] lg:w-auto">
         <ParticipantList 
           participants={participants}
           sessionId={sessionId}
@@ -49,9 +49,9 @@ const RoomMainContent = ({
       </div>
 
       {/* Main Content Area - Full height with proper distribution */}
-      <div className="flex-1 flex flex-col gap-4 sm:gap-5 lg:gap-6 min-w-0 min-h-0 lg:h-full overflow-hidden">
+      <div className="flex-1 flex flex-col gap-4 sm:gap-5 lg:gap-6 min-w-0 min-h-[600px]">
         {/* Statistics Panel */}
-        <div className="flex-shrink-0 overflow-hidden">
+        <div className="flex-shrink-0 min-h-[200px]">
           <StatisticsPanel 
             stats={stats}
             revealed={revealed}
@@ -63,7 +63,7 @@ const RoomMainContent = ({
         </div>
         
         {/* Voting Area - Takes remaining space */}
-        <div className="flex-1 min-h-0 lg:min-h-[200px] overflow-hidden">
+        <div className="flex-1 min-h-[300px]">
           <RoomVotingArea
             vote={vote}
             revealed={revealed}

@@ -1,0 +1,18 @@
+/* Performance optimizations for ParticipantList */
+.participantContainer {
+  contain: layout style;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.participantCard {
+  contain: layout;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.scrollableArea {
+  contain: layout;
+  transform: translateZ(0);
+  -webkit-overflow-scrolling: touch;
+}

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
+import styles from './ParticipantList.module.css';
 
 /**
  * ParticipantList component displays all participants in the room
@@ -109,41 +110,42 @@ const ParticipantList = ({
   };
 
   return (
-    <div className="w-full lg:w-[360px] xl:w-[420px] 2xl:w-[480px] flex flex-col h-full overflow-hidden">
-      <div className="bg-gradient-to-br from-indigo-50 to-purple-50 backdrop-blur-sm rounded-xl shadow-lg p-2 sm:p-3 lg:p-4 flex-1 flex flex-col min-w-0 border border-indigo-100 h-full overflow-hidden">
-        <div className="flex items-center justify-between mb-2 sm:mb-3 flex-shrink-0">
-          <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800">
+    <div className={`w-full lg:w-[360px] xl:w-[420px] 2xl:w-[480px] flex flex-col h-full min-h-[400px] ${styles.participantContainer}`}>
+      <div className="bg-gradient-to-br from-indigo-50 to-purple-50 backdrop-blur-sm rounded-xl shadow-lg p-2 sm:p-3 lg:p-4 flex-1 flex flex-col min-w-0 border border-indigo-100 h-full min-h-[400px]">
+        <div className="flex items-center justify-between mb-2 sm:mb-3 flex-shrink-0 min-h-[40px]">
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800 flex-shrink-0">
             Participants
           </h2>
-          <div className="px-2 py-1 sm:px-3 sm:py-1.5 bg-purple-100 text-purple-700 rounded-full border border-purple-200">
+          <div className="px-2 py-1 sm:px-3 sm:py-1.5 bg-purple-100 text-purple-700 rounded-full border border-purple-200 min-w-[120px] text-center flex-shrink-0">
             {getBreakdownText()}
           </div>
         </div>
         
-        <div className="relative flex-1 min-w-0 min-h-0 overflow-hidden">
-          <div className="space-y-1.5 sm:space-y-2 h-full overflow-y-auto overflow-x-hidden pr-1 sm:pr-2 scroll-smooth">{sortedParticipants.map((participant, index) => (
+        <div className={`relative flex-1 min-w-0 min-h-[300px] will-change-scroll ${styles.scrollableArea}`}>
+          <div className="space-y-1.5 sm:space-y-2 h-full overflow-y-auto overflow-x-hidden pr-1 sm:pr-2 scroll-smooth absolute inset-0 contain-layout">{sortedParticipants.map((participant, index) => (
               <div
                 key={participant.id}
-                className={`group bg-white/95 backdrop-blur-sm p-2.5 sm:p-3 rounded-xl shadow-sm border transition-all duration-300 hover:shadow-md
+                className={`group bg-white/95 backdrop-blur-sm p-2.5 sm:p-3 rounded-xl shadow-sm border will-change-transform ${styles.participantCard}
                   ${participant.isCurrentUser 
                     ? 'border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-50/50 to-transparent' 
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-gray-200'
                   }
                   ${participant.vote === 'voted' 
-                    ? 'shadow-green-200/60 shadow-lg border-green-300 bg-gradient-to-br from-green-50/40 to-emerald-50/30 ring-1 ring-green-200/50' 
+                    ? 'shadow-lg border-green-300 bg-gradient-to-br from-green-50/40 to-emerald-50/30' 
                     : ''
                   }`}
+                style={{ minHeight: '80px' }}
               >
                 <div className="flex items-center gap-2.5 sm:gap-3">
                   <div className="relative flex-shrink-0">
                     {/* Enhanced avatar with better gradients */}
-                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-bold shadow-lg transition-all duration-300 border-2 border-white ${
+                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-bold shadow-lg border-2 border-white ${
                       participant.isCurrentUser 
                         ? 'bg-gradient-to-br from-purple-500 to-indigo-600' 
                         : 'bg-gradient-to-br from-indigo-500 to-purple-500'
                     } ${
                       participant.vote === 'voted' 
-                        ? 'ring-2 ring-green-400/50 ring-offset-2' 
+                        ? 'ring-1 ring-green-400/30' 
                         : ''
                     }`}>
                       {(participant.name || '?').charAt(0).toUpperCase()}
@@ -181,7 +183,7 @@ const ParticipantList = ({
                           
                           {/* Ready status indicator */}
                           {participant.vote === 'voted' && (
-                            <span className="text-xs bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 px-2 py-0.5 rounded-full font-medium animate-pulse flex items-center gap-1 whitespace-nowrap border border-green-200 shadow-sm">
+                            <span className="text-xs bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 px-2 py-0.5 rounded-full font-medium flex items-center gap-1 whitespace-nowrap border border-green-200 shadow-sm">
                               <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                               </svg>
@@ -195,7 +197,7 @@ const ParticipantList = ({
                       {isHost && !participant.isCurrentUser && !participant.isHost && onRemoveParticipant && (
                         <button 
                           onClick={() => onRemoveParticipant(participant.id, participant.name)}
-                          className="text-red-400 hover:text-red-600 p-1.5 sm:p-2 rounded-full hover:bg-red-50 transition-all duration-200 flex-shrink-0 group-hover:opacity-100 opacity-60"
+                          className="text-red-400 hover:text-red-600 p-1.5 sm:p-2 rounded-full hover:bg-red-50 flex-shrink-0"
                           title="Remove participant"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -221,17 +223,17 @@ const ParticipantList = ({
                           {revealed ? (
                             // Enhanced vote display when revealed
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl flex items-center justify-center font-bold text-base sm:text-lg shadow-lg transform transition-all duration-300 hover:scale-110">
+                              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl flex items-center justify-center font-bold text-base sm:text-lg shadow-lg">
                                 {participant.vote}
                               </div>
                             </div>
                           ) : (
                             // Enhanced "voted" state before reveal
                             <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-lg flex items-center justify-center shadow-lg animate-pulse">
+                              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-lg flex items-center justify-center shadow-lg">
                                 <span className="text-xs sm:text-sm">✓</span>
                               </div>
-                              <span className="text-xs sm:text-sm font-medium text-green-700 bg-green-50 px-2 py-1 sm:px-3 sm:py-1 rounded-full animate-pulse">
+                              <span className="text-xs sm:text-sm font-medium text-green-700 bg-green-50 px-2 py-1 sm:px-3 sm:py-1 rounded-full">
                                 Vote Casted
                               </span>
                             </div>
@@ -261,7 +263,7 @@ const ParticipantList = ({
                         // Enhanced "deciding" state for actual participants
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-lg flex items-center justify-center shadow-md">
-                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full animate-ping"></div>
+                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full"></div>
                           </div>
                           <span className="text-xs sm:text-sm text-amber-700 bg-amber-50 px-2 py-1 sm:px-3 sm:py-1 rounded-full">
                             Deciding...

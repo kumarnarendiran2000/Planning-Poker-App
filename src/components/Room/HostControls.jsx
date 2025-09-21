@@ -14,10 +14,10 @@ const HostControls = ({ revealed, onReveal, onReset, onDelete }) => {
         <button
           onClick={onReveal}
           disabled={revealed}
-          className={`flex items-center justify-center gap-2 px-4 py-3 sm:px-5 sm:py-4 text-sm sm:text-base rounded-xl font-medium transition-all duration-200 flex-1 ${
+          className={`flex items-center justify-center gap-2 px-4 py-3 sm:px-5 sm:py-4 text-sm sm:text-base rounded-xl font-medium flex-1 ${
             revealed
               ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg transform hover:scale-105'
+              : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg'
           }`}
         >
           <span className="text-base sm:text-xl">👁️</span>
@@ -25,14 +25,14 @@ const HostControls = ({ revealed, onReveal, onReset, onDelete }) => {
         </button>
         <button
           onClick={onReset}
-          className="flex items-center justify-center gap-2 px-4 py-3 sm:px-5 sm:py-4 text-sm sm:text-base bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-medium hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex-1"
+          className="flex items-center justify-center gap-2 px-4 py-3 sm:px-5 sm:py-4 text-sm sm:text-base bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-medium hover:shadow-lg flex-1"
         >
           <span className="text-base sm:text-xl">🔄</span>
           <span className="truncate">Reset Votes</span>
         </button>
         <button
           onClick={onDelete}
-          className="flex items-center justify-center gap-2 px-4 py-3 sm:px-5 sm:py-4 text-sm sm:text-base bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl font-medium hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex-1"
+          className="flex items-center justify-center gap-2 px-4 py-3 sm:px-5 sm:py-4 text-sm sm:text-base bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl font-medium hover:shadow-lg flex-1"
         >
           <span className="text-base sm:text-xl">🗑️</span>
           <span className="truncate">Delete Room</span>

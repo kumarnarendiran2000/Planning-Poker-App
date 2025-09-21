@@ -37,11 +37,11 @@ const RoomHeader = ({ roomId, isHost, isParticipant = true, participantCount }) 
       
       {/* Room Details Section with improved typography */}
       <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-1">
-        <div className="flex items-center gap-1 px-4 py-2 sm:px-6 sm:py-3 bg-purple-100 text-purple-700 rounded-full text-sm sm:text-base font-medium shadow-sm border border-purple-200 transition-all duration-200 hover:shadow-md">
+        <div className="flex items-center gap-1 px-4 py-2 sm:px-6 sm:py-3 bg-purple-100 text-purple-700 rounded-full text-sm sm:text-base font-medium shadow-sm border border-purple-200 hover:shadow-md">
           <span>Room: {roomId}</span>
           <button
             onClick={handleCopyRoomCode}
-            className="ml-2 p-1 hover:bg-purple-200 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-300"
+            className="ml-2 p-1 hover:bg-purple-200 rounded-full focus:outline-none"
             title={copied ? 'Copied!' : 'Copy room code'}
           >
             {copied ? (
@@ -56,17 +56,17 @@ const RoomHeader = ({ roomId, isHost, isParticipant = true, participantCount }) 
           </button>
         </div>
         {isHost && isParticipant && (
-          <span className="px-4 py-2 sm:px-6 sm:py-3 bg-green-100 text-green-700 rounded-full text-sm sm:text-base font-medium shadow-sm border border-green-200 transition-all duration-200 hover:shadow-md">
+          <span className="px-4 py-2 sm:px-6 sm:py-3 bg-green-100 text-green-700 rounded-full text-sm sm:text-base font-medium shadow-sm border border-green-200 hover:shadow-md">
             Host Participant
           </span>
         )}
         {isHost && !isParticipant && (
-          <span className="px-4 py-2 sm:px-6 sm:py-3 bg-orange-100 text-orange-700 rounded-full text-sm sm:text-base font-medium shadow-sm border border-orange-200 transition-all duration-200 hover:shadow-md">
+          <span className="px-4 py-2 sm:px-6 sm:py-3 bg-orange-100 text-orange-700 rounded-full text-sm sm:text-base font-medium shadow-sm border border-orange-200 hover:shadow-md">
             Facilitator
           </span>
         )}
         {!isHost && participantCount > 0 && (
-          <span className="px-4 py-2 sm:px-6 sm:py-3 bg-indigo-100 text-indigo-700 rounded-full text-sm sm:text-base font-medium shadow-sm border border-indigo-200 transition-all duration-200 hover:shadow-md">
+          <span className="px-4 py-2 sm:px-6 sm:py-3 bg-indigo-100 text-indigo-700 rounded-full text-sm sm:text-base font-medium shadow-sm border border-indigo-200 hover:shadow-md">
             Participant
           </span>
         )}
