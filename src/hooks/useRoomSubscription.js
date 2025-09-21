@@ -31,13 +31,16 @@ export const useRoomSubscription = (roomId, state, navigation) => {
           // Clear room data immediately
           StorageUtils.clearRoomData(roomId);
           
-          // Show toast with a brief delay before redirect to ensure it renders
-          enhancedToast.error('This room has been deleted by the host. Thank you for participating!');
+          // Don't show toast to host (they initiated the deletion)
+          if (!isHost) {
+            // Show toast with a brief delay before redirect to ensure it renders
+            enhancedToast.error('This room has been deleted by the host. Thank you for participating!');
+          }
           
-          // Small delay to ensure toast renders before navigation
+          // Small delay to ensure toast renders before navigation (or immediate for host)
           setTimeout(() => {
             navigate('/', { replace: true });
-          }, 500); // 500ms delay to let toast show
+          }, isHost ? 100 : 500); // Shorter delay for host since no toast
         } else {
           // User deleted it themselves, just navigate
           navigate('/', { replace: true });
@@ -61,13 +64,16 @@ export const useRoomSubscription = (roomId, state, navigation) => {
           // Clear any room-specific data
           StorageUtils.clearRoomData(roomId);
           
-          // Show toast with a brief delay before redirect to ensure it renders
-          enhancedToast.warning('This room is being deleted by the host. Thank you for participating!');
+          // Don't show toast to host (they initiated the deletion)
+          if (!isHost) {
+            // Show toast with a brief delay before redirect to ensure it renders
+            enhancedToast.warning('This room is being deleted by the host. Thank you for participating!');
+          }
           
-          // Small delay to ensure toast renders before navigation
+          // Small delay to ensure toast renders before navigation (or immediate for host)
           setTimeout(() => {
             navigate('/', { replace: true });
-          }, 500); // 500ms delay to let toast show
+          }, isHost ? 100 : 500); // Shorter delay for host since no toast
         }
         return;
       }

@@ -7,12 +7,16 @@ import ActiveSessions from './components/ActiveSessions'
 import Room from './components/Room/index'
 import AboutModal from './components/modals/AboutModal'
 import { runCleanupIfNeeded } from './services/cleanupService'
+import { useActiveSessionMonitor } from './hooks/useActiveSessionMonitor'
 
 function Home() {
   // State to force re-render when sessions change
   const [sessionsUpdated, setSessionsUpdated] = useState(0);
   // State for About modal
   const [showAboutModal, setShowAboutModal] = useState(false);
+  
+  // Monitor active sessions for deletions
+  useActiveSessionMonitor();
   
   // Run cleanup when home page loads
   useEffect(() => {
