@@ -135,8 +135,8 @@ const Room = () => {
   // Render the room
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex flex-col">
-      <div className="flex-1 container mx-auto px-4 sm:px-6 py-4 sm:py-6 min-h-screen">
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-4rem)] flex flex-col">
+      <div className="flex-1 container mx-auto px-4 sm:px-6 xl:px-8 2xl:px-12 py-4 sm:py-6 min-h-screen max-w-none">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 xl:p-10 2xl:p-12 min-h-[calc(100vh-4rem)] flex flex-col">
           
           {/* Room Header */}
           <div className="flex-shrink-0 mb-4 sm:mb-6">

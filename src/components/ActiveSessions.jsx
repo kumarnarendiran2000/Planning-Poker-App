@@ -63,7 +63,6 @@ const ActiveSessions = ({ onSessionDeleted }) => {
         const roomExists = await RoomService.checkRoomExists(session.roomId);
         if (roomExists && session.sessionId) {
           await RoomService.removeParticipant(session.roomId, session.sessionId);
-          console.log(`Removed participant ${session.sessionId} from room ${session.roomId}`);
           
           // If the leaving participant is the host, delete the entire room
           if (session.isHost) {
@@ -72,25 +71,20 @@ const ActiveSessions = ({ onSessionDeleted }) => {
               StorageUtils.markRoomDeleting(session.roomId);
               
               await RoomService.deleteRoom(session.roomId);
-              console.log(`Host left via homepage, so room ${session.roomId} was deleted`);
             } catch (deleteError) {
-              console.warn('Failed to delete room after host left:', deleteError);
+              // Failed to delete room after host left
             }
           } else {
             // If not the host, check if the room is now empty and should be deleted
             try {
               const wasDeleted = await RoomService.deleteRoomIfEmpty(session.roomId);
-              if (wasDeleted) {
-                console.log(`Room ${session.roomId} was empty after participant left, so it was deleted`);
-              }
             } catch (deleteError) {
-              console.warn('Failed to check/delete empty room:', deleteError);
+              // Failed to check/delete empty room
             }
           }
         }
       } catch (firebaseError) {
         // If Firebase removal fails, still continue with localStorage cleanup
-        console.warn('Failed to remove participant from Firebase:', firebaseError);
       }
       
       // Clear the room data from localStorage

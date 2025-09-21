@@ -13,8 +13,13 @@ const ParticipantList = ({
   onRemoveParticipant 
 }) => {
   
+  // Check if data is still loading
+  const isLoading = !participants || Object.keys(participants).length === 0 || !sessionId;
+  
   // Memoize participant list to prevent unnecessary re-renders
   const sortedParticipants = useMemo(() => {
+    if (isLoading) return [];
+    
     // Convert participants object to array for sorting
     const participantsArray = Object.entries(participants)
       .map(([id, participant]) => {
@@ -48,10 +53,20 @@ const ParticipantList = ({
         // 3. Finally sort by name
         return (a.name || "").localeCompare(b.name || "");
       });
-  }, [participants, sessionId]);
+  }, [participants, sessionId, isLoading]);
   
   // Calculate participant breakdown
   const getParticipantBreakdown = () => {
+    if (isLoading) {
+      return {
+        totalCount: 0,
+        regularParticipants: 0,
+        facilitators: 0,
+        hostParticipants: 0,
+        votingStrength: 0
+      };
+    }
+    
     const totalCount = Object.keys(participants).length;
     
     // Count different types of participants
@@ -82,6 +97,16 @@ const ParticipantList = ({
 
   // Create display text for the breakdown
   const getBreakdownText = () => {
+    if (isLoading) {
+      return (
+        <div className="text-center leading-tight">
+          <div className="text-xs font-medium text-gray-400">
+            Loading...
+          </div>
+        </div>
+      );
+    }
+    
     if (facilitators > 0) {
       // Facilitator session
       return (
@@ -110,19 +135,36 @@ const ParticipantList = ({
   };
 
   return (
-    <div className={`w-full lg:w-[360px] xl:w-[420px] 2xl:w-[480px] flex flex-col h-full min-h-[400px] ${styles.participantContainer}`}>
-      <div className="bg-gradient-to-br from-indigo-50 to-purple-50 backdrop-blur-sm rounded-xl shadow-lg p-2 sm:p-3 lg:p-4 flex-1 flex flex-col min-w-0 border border-indigo-100 h-full min-h-[400px]">
-        <div className="flex items-center justify-between mb-2 sm:mb-3 flex-shrink-0 min-h-[40px]">
-          <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800 flex-shrink-0">
+    <div className={`w-full flex flex-col h-full min-h-[400px] ${styles.participantContainer}`}>
+      <div className="bg-gradient-to-br from-indigo-50 to-purple-50 backdrop-blur-sm rounded-xl shadow-lg p-2 sm:p-3 lg:p-4 xl:p-5 2xl:p-6 flex-1 flex flex-col min-w-0 border border-indigo-100 h-full min-h-[400px]">
+        <div className="flex items-center justify-between mb-2 sm:mb-3 xl:mb-4 2xl:mb-5 flex-shrink-0 min-h-[40px]">
+          <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-800 flex-shrink-0">
             Participants
           </h2>
-          <div className="px-2 py-1 sm:px-3 sm:py-1.5 bg-purple-100 text-purple-700 rounded-full border border-purple-200 min-w-[120px] text-center flex-shrink-0">
+          <div className="px-2 py-1 sm:px-3 sm:py-1.5 xl:px-4 xl:py-2 2xl:px-5 2xl:py-2.5 bg-purple-100 text-purple-700 rounded-full border border-purple-200 min-w-[120px] xl:min-w-[140px] 2xl:min-w-[160px] text-center flex-shrink-0 text-xs xl:text-sm 2xl:text-base">
             {getBreakdownText()}
           </div>
         </div>
         
-        <div className={`relative flex-1 min-w-0 min-h-[300px] will-change-scroll ${styles.scrollableArea}`}>
-          <div className="space-y-1.5 sm:space-y-2 h-full overflow-y-auto overflow-x-hidden pr-1 sm:pr-2 scroll-smooth absolute inset-0 contain-layout">{sortedParticipants.map((participant, index) => (
+        <div className={`relative flex-1 min-w-0 min-h-[300px] xl:min-h-[360px] 2xl:min-h-[420px] will-change-scroll ${styles.scrollableArea}`}>
+          <div className="space-y-1.5 sm:space-y-2 xl:space-y-2.5 2xl:space-y-3 h-full overflow-y-auto overflow-x-hidden pr-1 sm:pr-2 xl:pr-3 2xl:pr-4 scroll-smooth absolute inset-0 contain-layout">
+            {isLoading ? (
+              // Loading skeleton
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-white/50 backdrop-blur-sm p-2.5 sm:p-3 rounded-xl shadow-sm border border-gray-200 animate-pulse">
+                    <div className="flex items-center gap-2.5 sm:gap-3">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gray-300"></div>
+                      <div className="flex-1">
+                        <div className="h-4 bg-gray-300 rounded w-24 mb-2"></div>
+                        <div className="h-3 bg-gray-200 rounded w-16"></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              sortedParticipants.map((participant, index) => (
               <div
                 key={participant.id}
                 className={`group bg-white/95 backdrop-blur-sm p-2.5 sm:p-3 rounded-xl shadow-sm border will-change-transform ${styles.participantCard}
@@ -274,7 +316,8 @@ const ParticipantList = ({
                   </div>
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>

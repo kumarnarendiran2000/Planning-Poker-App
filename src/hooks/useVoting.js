@@ -67,7 +67,6 @@ const useVoting = (roomId, sessionId, participants, revealed, isHost, alertFunct
       await RoomService.submitVote(roomId, sessionId, value);
       // Remove: setVote(value); - let Firebase listener handle this
     } catch (error) {
-      console.error('Error submitting vote:', error);
       showError({
         title: 'Error',
         message: 'Failed to submit vote: ' + error.message,
@@ -94,7 +93,6 @@ const useVoting = (roomId, sessionId, participants, revealed, isHost, alertFunct
       await RoomService.skipVote(roomId, sessionId);
       // Remove: setVote('SKIP'); - let Firebase listener handle this
     } catch (error) {
-      console.error('Error skipping vote:', error);
       showError({
         title: 'Error',
         message: 'Failed to skip vote: ' + error.message,
@@ -121,7 +119,6 @@ const useVoting = (roomId, sessionId, participants, revealed, isHost, alertFunct
       await RoomService.unskipVote(roomId, sessionId);
       // Remove: setVote(null); - let Firebase listener handle this
     } catch (error) {
-      console.error('Error unskipping vote:', error);
       showError({
         title: 'Error',
         message: 'Failed to unskip vote: ' + error.message,
@@ -147,7 +144,6 @@ const useVoting = (roomId, sessionId, participants, revealed, isHost, alertFunct
     try {
       await RoomService.startRevealCountdown(roomId);
     } catch (error) {
-      console.error('Error starting countdown:', error);
       showError({
         title: 'Error',
         message: 'Failed to start countdown: ' + error.message,

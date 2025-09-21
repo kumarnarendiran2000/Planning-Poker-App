@@ -13,7 +13,6 @@ const RoomHeader = ({ roomId, isHost, isParticipant = true, participantCount }) 
       setCopied(true);
       setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
     } catch (err) {
-      console.error('Failed to copy room code:', err);
       // Fallback for older browsers
       const textArea = document.createElement('textarea');
       textArea.value = roomId;

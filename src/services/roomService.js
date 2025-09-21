@@ -340,7 +340,6 @@ class RoomService {
             const reason = isFutureTimestamp ? 'invalid timestamp' : `>${hoursThreshold}h old`;
             await this.deleteRoom(roomId);
             deletedRooms.push(roomId);
-            console.log(`🗑️ Deleted room ${roomId} (${reason})`);
           } catch (error) {
             console.error(`❌ Failed to delete room ${roomId}:`, error);
           }

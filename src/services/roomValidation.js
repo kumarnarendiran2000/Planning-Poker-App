@@ -32,7 +32,6 @@ export const checkRoomExists = async (roomId) => {
     
     return true;
   } catch (error) {
-    console.error('Error checking room existence:', error);
     return false;
   }
 };
@@ -52,7 +51,6 @@ export const getRoomData = async (roomId) => {
     const snapshot = await get(roomRef);
     return snapshot.exists() ? snapshot.val() : null;
   } catch (error) {
-    console.error('Error getting room data:', error);
     return null;
   }
 };
@@ -74,7 +72,6 @@ export const isRoomEmpty = async (roomId) => {
     // Check if participants object is empty
     return Object.keys(roomData.participants).length === 0;
   } catch (error) {
-    console.error('Error checking if room is empty:', error);
     throw error;
   }
 };

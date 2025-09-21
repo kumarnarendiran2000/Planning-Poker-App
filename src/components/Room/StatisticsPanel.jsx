@@ -5,8 +5,20 @@ import PropTypes from 'prop-types';
  * StatisticsPanel component displays voting statistics with enhanced visuals
  */
 const StatisticsPanel = ({ stats, revealed, vote, votesSubmitted, totalParticipants, participants }) => {
+  // Check if data is still loading
+  const isLoading = !participants || Object.keys(participants).length === 0;
+  
   // Calculate proper participant counts
   const getParticipantCounts = () => {
+    if (isLoading || !participants) {
+      return {
+        totalEligible: 0,
+        actualVoted: 0,
+        skipped: 0,
+        notVoted: 0,
+        votesWithSkipped: 0
+      };
+    }
     if (!participants) {
       return {
         totalEligible: totalParticipants,
@@ -68,55 +80,73 @@ const StatisticsPanel = ({ stats, revealed, vote, votesSubmitted, totalParticipa
         {/* Votes Progress */}
         <div className="bg-white/90 backdrop-blur-sm p-3 sm:p-4 rounded-xl shadow-sm border border-indigo-100 col-span-2 md:col-span-3 lg:col-span-2 xl:col-span-2 2xl:col-span-2 min-h-[100px] sm:min-h-[110px] lg:min-h-[120px] flex flex-col justify-center items-center text-center hover:shadow-md">
           <div className="flex items-center gap-2 mb-2">
-            <div className={`w-2 h-2 rounded-full shadow-sm ${isVotingComplete ? 'bg-green-500' : 'bg-indigo-500'}`}></div>
+            <div className={`w-2 h-2 rounded-full shadow-sm ${isLoading ? 'bg-gray-400' : isVotingComplete ? 'bg-green-500' : 'bg-indigo-500'}`}></div>
             <h3 className="text-xs sm:text-sm font-medium text-indigo-600">
               Submissions
             </h3>
           </div>
           <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-indigo-700">
-            {votesWithSkipped}<span className="text-lg sm:text-xl lg:text-2xl text-gray-500">/{totalEligible}</span>
+            {isLoading ? (
+              <span className="text-gray-400">-</span>
+            ) : (
+              <>
+                {votesWithSkipped}<span className="text-lg sm:text-xl lg:text-2xl text-gray-500">/{totalEligible}</span>
+              </>
+            )}
           </div>
           {revealed ? (
             // After reveal: Show breakdown of not voted and skipped separately
             <div className="text-xs mt-1 space-y-0.5">
-              {actualVoted > 0 && (
-                <div className="text-green-600 font-medium">
-                  {actualVoted} voted
-                </div>
-              )}
-              {skipped > 0 && (
-                <div className="text-yellow-600 font-medium">
-                  {skipped} skipped
-                </div>
-              )}
-              {notVoted > 0 && (
-                <div className="text-red-600 font-medium">
-                  {notVoted} not voted
-                </div>
-              )}
-              {notVoted === 0 && skipped === 0 && actualVoted === totalEligible && (
-                <div className="text-green-600 font-medium">
-                  All voted
-                </div>
+              {isLoading ? (
+                <div className="text-gray-400">Loading...</div>
+              ) : (
+                <>
+                  {actualVoted > 0 && (
+                    <div className="text-green-600 font-medium">
+                      {actualVoted} voted
+                    </div>
+                  )}
+                  {skipped > 0 && (
+                    <div className="text-yellow-600 font-medium">
+                      {skipped} skipped
+                    </div>
+                  )}
+                  {notVoted > 0 && (
+                    <div className="text-red-600 font-medium">
+                      {notVoted} not voted
+                    </div>
+                  )}
+                  {notVoted === 0 && skipped === 0 && actualVoted === totalEligible && (
+                    <div className="text-green-600 font-medium">
+                      All voted
+                    </div>
+                  )}
+                </>
               )}
             </div>
           ) : (
             // Before reveal: Show skipped count if any, and pending count
             <div className="text-xs mt-1 space-y-0.5">
-              {skipped > 0 && (
-                <div className="text-yellow-600 font-medium">
-                  {skipped} skipped
-                </div>
-              )}
-              {pendingVotes > 0 && (
-                <div className="text-amber-600 font-medium">
-                  {pendingVotes} pending
-                </div>
-              )}
-              {pendingVotes === 0 && (
-                <div className="text-green-600 font-medium">
-                  All submitted
-                </div>
+              {isLoading ? (
+                <div className="text-gray-400">Loading...</div>
+              ) : (
+                <>
+                  {skipped > 0 && (
+                    <div className="text-yellow-600 font-medium">
+                      {skipped} skipped
+                    </div>
+                  )}
+                  {pendingVotes > 0 && (
+                    <div className="text-amber-600 font-medium">
+                      {pendingVotes} pending
+                    </div>
+                  )}
+                  {pendingVotes === 0 && (
+                    <div className="text-green-600 font-medium">
+                      All submitted
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
