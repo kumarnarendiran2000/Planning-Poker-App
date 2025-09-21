@@ -88,7 +88,7 @@ const ParticipantList = ({
           <div className="text-xs font-medium">
             {regularParticipants + hostParticipants} participants, {facilitators} facilitator
           </div>
-          <div className="text-xs text-purple-600 opacity-80">
+          <div className="text-xs text-purple-700">
             {totalCount} total, {votingStrength} voting
           </div>
         </div>
@@ -100,7 +100,7 @@ const ParticipantList = ({
           <div className="text-xs font-medium">
             {regularParticipants} participants{hostParticipants > 0 ? `, ${hostParticipants} host participant` : ''}
           </div>
-          <div className="text-xs text-purple-600 opacity-80">
+          <div className="text-xs text-purple-700">
             {totalCount} total, {votingStrength} voting
           </div>
         </div>
