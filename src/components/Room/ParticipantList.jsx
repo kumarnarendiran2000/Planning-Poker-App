@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import styles from './ParticipantList.module.css';
 
@@ -15,6 +15,21 @@ const ParticipantList = ({
   
   // Filter state
   const [activeFilter, setActiveFilter] = useState('all');
+  const [activeVoteFilter, setActiveVoteFilter] = useState('all-votes');
+  
+  // Reset vote filter when votes are not revealed
+  useEffect(() => {
+    if (!revealed) {
+      setActiveVoteFilter('all-votes');
+    }
+  }, [revealed]);
+  
+  // Auto-reset vote filter when switching to incompatible status filters
+  useEffect(() => {
+    if ((activeFilter === 'not-voted' || activeFilter === 'skipped') && activeVoteFilter !== 'all-votes') {
+      setActiveVoteFilter('all-votes');
+    }
+  }, [activeFilter, activeVoteFilter]);
   
   // Check if data is still loading
   const isLoading = !participants || Object.keys(participants).length === 0 || !sessionId;
@@ -80,6 +95,74 @@ const ParticipantList = ({
       }
     });
   }, [sortedParticipants, activeFilter]);
+  
+  // Extract unique vote values and calculate distribution (only when revealed)
+  const voteDistribution = useMemo(() => {
+    if (!revealed || isLoading) return { voteValues: [], minVote: null, maxVote: null, voteCounts: {} };
+    
+    const voteCounts = {};
+    const voteValues = [];
+    
+    sortedParticipants.forEach(participant => {
+      if (participant.isParticipant !== false && participant.vote && participant.vote !== 'SKIP' && participant.vote !== null && participant.vote !== '') {
+        const vote = participant.vote;
+        if (!voteCounts[vote]) {
+          voteCounts[vote] = 0;
+          voteValues.push(vote);
+        }
+        voteCounts[vote]++;
+      }
+    });
+    
+    // Sort vote values numerically/logically
+    voteValues.sort((a, b) => {
+      // Try to parse as numbers first
+      const numA = parseFloat(a);
+      const numB = parseFloat(b);
+      if (!isNaN(numA) && !isNaN(numB)) {
+        return numA - numB;
+      }
+      // Fallback to string comparison
+      return a.localeCompare(b);
+    });
+    
+    const numericVotes = voteValues.filter(v => !isNaN(parseFloat(v))).map(v => parseFloat(v));
+    const minVote = numericVotes.length > 0 ? Math.min(...numericVotes) : null;
+    const maxVote = numericVotes.length > 0 ? Math.max(...numericVotes) : null;
+    
+    return { voteValues, minVote, maxVote, voteCounts };
+  }, [sortedParticipants, revealed, isLoading]);
+  
+  // Apply vote value filtering on top of status filtering
+  const finalFilteredParticipants = useMemo(() => {
+    if (!revealed || activeVoteFilter === 'all-votes') return filteredParticipants;
+    
+    // If status filter is 'not-voted' or 'skipped', vote value filters don't make sense
+    if (activeFilter === 'not-voted' || activeFilter === 'skipped') {
+      return []; // Return empty array for logical consistency
+    }
+    
+    return filteredParticipants.filter(participant => {
+      if (activeVoteFilter === 'highest') {
+        return participant.vote && !isNaN(parseFloat(participant.vote)) && parseFloat(participant.vote) === voteDistribution.maxVote;
+      }
+      if (activeVoteFilter === 'lowest') {
+        return participant.vote && !isNaN(parseFloat(participant.vote)) && parseFloat(participant.vote) === voteDistribution.minVote;
+      }
+      return participant.vote === activeVoteFilter;
+    });
+  }, [filteredParticipants, activeVoteFilter, revealed, voteDistribution, activeFilter]);
+
+  // Helper function to check if vote filters should be disabled
+  const shouldDisableVoteFilters = () => {
+    return activeFilter === 'not-voted' || activeFilter === 'skipped';
+  };
+
+  // Helper function to check if highest/lowest filters make sense
+  const hasDistinctVotes = () => {
+    return voteDistribution.minVote !== null && voteDistribution.maxVote !== null && voteDistribution.minVote !== voteDistribution.maxVote;
+  };
+  
   
   // Calculate filter counts
   const filterCounts = useMemo(() => {
@@ -194,8 +277,14 @@ const ParticipantList = ({
           </div>
         </div>
         
-        {/* Filter Buttons */}
-        <div className="flex items-center justify-between mb-2 sm:mb-3 flex-shrink-0">
+        {/* Status Filter Buttons */}
+        <div className="mb-2 sm:mb-3 flex-shrink-0">
+          <div className="text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            Filter by Status
+          </div>
           <div className="flex flex-wrap gap-1 sm:gap-2">
             {['all', 'voted', 'not-voted', 'skipped'].map((filter) => (
               <button
@@ -216,6 +305,110 @@ const ParticipantList = ({
           </div>
         </div>
         
+        {/* Story Points Filter Buttons (only shown when votes are revealed) */}
+        {revealed && voteDistribution.voteValues.length > 0 && (
+          <div className="mb-2 sm:mb-3 flex-shrink-0">
+            <div className="text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+              </svg>
+              Filter by Story Points
+            </div>
+            <div className="flex flex-wrap gap-1 sm:gap-2">
+              <button
+                onClick={() => setActiveVoteFilter('all-votes')}
+                disabled={shouldDisableVoteFilters()}
+                className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-lg border-2 transition-all transform hover:scale-105 ${
+                  shouldDisableVoteFilters() 
+                    ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                    : activeVoteFilter === 'all-votes'
+                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white border-purple-400 shadow-lg shadow-purple-200'
+                    : 'bg-gradient-to-r from-white to-purple-50 text-purple-700 border-purple-200 hover:from-purple-50 hover:to-purple-100 hover:border-purple-300 shadow-sm'
+                }`}
+              >
+                <span className="flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                  </svg>
+                  All Votes
+                </span>
+              </button>
+              
+              {/* Individual vote values */}
+              {voteDistribution.voteValues.map((vote) => (
+                <button
+                  key={vote}
+                  onClick={() => setActiveVoteFilter(vote)}
+                  disabled={shouldDisableVoteFilters()}
+                  className={`relative px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-lg border-2 transition-all transform hover:scale-105 ${
+                    shouldDisableVoteFilters()
+                      ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                      : activeVoteFilter === vote
+                      ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white border-purple-400 shadow-lg shadow-purple-200'
+                      : 'bg-gradient-to-r from-white to-purple-50 text-purple-700 border-purple-200 hover:from-purple-50 hover:to-purple-100 hover:border-purple-300 shadow-sm'
+                  }`}
+                >
+                  <span className="flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    {vote} pts ({voteDistribution.voteCounts[vote]})
+                  </span>
+                </button>
+              ))}
+              
+              {/* Highest/Lowest vote filters (only if there are distinct numeric votes) */}
+              {hasDistinctVotes() && (
+                <>
+                  <button
+                    onClick={() => setActiveVoteFilter('highest')}
+                    disabled={shouldDisableVoteFilters()}
+                    className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-lg border-2 transition-all transform hover:scale-105 ${
+                      shouldDisableVoteFilters()
+                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                        : activeVoteFilter === 'highest'
+                        ? 'bg-gradient-to-r from-green-500 to-green-600 text-white border-green-400 shadow-lg shadow-green-200'
+                        : 'bg-gradient-to-r from-white to-green-50 text-green-700 border-green-200 hover:from-green-50 hover:to-green-100 hover:border-green-300 shadow-sm'
+                    }`}
+                  >
+                    <span className="flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                      </svg>
+                      Highest ({voteDistribution.maxVote} pts)
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setActiveVoteFilter('lowest')}
+                    disabled={shouldDisableVoteFilters()}
+                    className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-lg border-2 transition-all transform hover:scale-105 ${
+                      shouldDisableVoteFilters()
+                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                        : activeVoteFilter === 'lowest'
+                        ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white border-orange-400 shadow-lg shadow-orange-200'
+                        : 'bg-gradient-to-r from-white to-orange-50 text-orange-700 border-orange-200 hover:from-orange-50 hover:to-orange-100 hover:border-orange-300 shadow-sm'
+                    }`}
+                  >
+                    <span className="flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      Lowest ({voteDistribution.minVote} pts)
+                    </span>
+                  </button>
+                </>
+              )}
+            </div>
+            
+            {/* Filter info */}
+            {activeVoteFilter !== 'all-votes' && (
+              <div className="text-xs text-gray-500 ml-2 mt-1">
+                {shouldDisableVoteFilters() ? 'Vote filters not applicable' : 'Showing participants with selected story points'}
+              </div>
+            )}
+          </div>
+        )}
+        
         <div className={`relative flex-1 min-w-0 min-h-[300px] xl:min-h-[360px] 2xl:min-h-[420px] will-change-scroll ${styles.scrollableArea}`}>
           <div className="space-y-1.5 sm:space-y-2 xl:space-y-2.5 2xl:space-y-3 h-full overflow-y-auto overflow-x-hidden pr-1 sm:pr-2 xl:pr-3 2xl:pr-4 scroll-smooth absolute inset-0 contain-layout">
             {isLoading ? (
@@ -233,7 +426,7 @@ const ParticipantList = ({
                   </div>
                 ))}
               </div>
-            ) : filteredParticipants.length === 0 ? (
+            ) : finalFilteredParticipants.length === 0 ? (
               // Empty state when no participants match the filter
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <div className="text-gray-400 mb-2">
@@ -242,14 +435,14 @@ const ParticipantList = ({
                   </svg>
                 </div>
                 <p className="text-sm text-gray-500">
-                  No participants match the "{activeFilter === 'not-voted' ? 'Not Voted' : activeFilter === 'voted' ? 'Voted' : 'Skipped'}" filter
+                  No participants match the current filters
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
                   Try selecting a different filter
                 </p>
               </div>
             ) : (
-              filteredParticipants.map((participant, index) => (
+              finalFilteredParticipants.map((participant, index) => (
               <div
                 key={participant.id}
                 className={`group bg-white/95 backdrop-blur-sm p-2.5 sm:p-3 rounded-xl shadow-sm border will-change-transform ${styles.participantCard}
