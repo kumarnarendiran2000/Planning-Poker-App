@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import styles from './ParticipantList.module.css';
 
@@ -12,6 +12,9 @@ const ParticipantList = ({
   isHost = false, 
   onRemoveParticipant 
 }) => {
+  
+  // Filter state
+  const [activeFilter, setActiveFilter] = useState('all');
   
   // Check if data is still loading
   const isLoading = !participants || Object.keys(participants).length === 0 || !sessionId;
@@ -54,6 +57,51 @@ const ParticipantList = ({
         return (a.name || "").localeCompare(b.name || "");
       });
   }, [participants, sessionId, isLoading]);
+  
+  // Filter participants based on active filter
+  const filteredParticipants = useMemo(() => {
+    if (activeFilter === 'all') return sortedParticipants;
+    
+    return sortedParticipants.filter(participant => {
+      // Facilitators don't vote, so they should only appear in 'all'
+      if (participant.isParticipant === false) {
+        return false;
+      }
+      
+      switch (activeFilter) {
+        case 'voted':
+          return participant.vote && participant.vote !== 'SKIP' && participant.vote !== null && participant.vote !== '';
+        case 'not-voted':
+          return !participant.vote || participant.vote === null || participant.vote === '';
+        case 'skipped':
+          return participant.vote === 'SKIP';
+        default:
+          return true;
+      }
+    });
+  }, [sortedParticipants, activeFilter]);
+  
+  // Calculate filter counts
+  const filterCounts = useMemo(() => {
+    if (isLoading) return { all: 0, voted: 0, 'not-voted': 0, skipped: 0 };
+    
+    const counts = { all: sortedParticipants.length, voted: 0, 'not-voted': 0, skipped: 0 };
+    
+    sortedParticipants.forEach(participant => {
+      // Skip facilitators for vote counts
+      if (participant.isParticipant === false) return;
+      
+      if (participant.vote === 'SKIP') {
+        counts.skipped++;
+      } else if (participant.vote && participant.vote !== null && participant.vote !== '') {
+        counts.voted++;
+      } else {
+        counts['not-voted']++;
+      }
+    });
+    
+    return counts;
+  }, [sortedParticipants, isLoading]);
   
   // Calculate participant breakdown
   const getParticipantBreakdown = () => {
@@ -146,6 +194,28 @@ const ParticipantList = ({
           </div>
         </div>
         
+        {/* Filter Buttons */}
+        <div className="flex items-center justify-between mb-2 sm:mb-3 flex-shrink-0">
+          <div className="flex flex-wrap gap-1 sm:gap-2">
+            {['all', 'voted', 'not-voted', 'skipped'].map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setActiveFilter(filter)}
+                className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium rounded-full border transition-colors ${
+                  activeFilter === filter
+                    ? 'bg-indigo-500 text-white border-indigo-500'
+                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                }`}
+              >
+                {filter === 'all' ? 'All' : 
+                 filter === 'voted' ? 'Voted' : 
+                 filter === 'not-voted' ? 'Not Voted' : 
+                 'Skipped'} ({filterCounts[filter]})
+              </button>
+            ))}
+          </div>
+        </div>
+        
         <div className={`relative flex-1 min-w-0 min-h-[300px] xl:min-h-[360px] 2xl:min-h-[420px] will-change-scroll ${styles.scrollableArea}`}>
           <div className="space-y-1.5 sm:space-y-2 xl:space-y-2.5 2xl:space-y-3 h-full overflow-y-auto overflow-x-hidden pr-1 sm:pr-2 xl:pr-3 2xl:pr-4 scroll-smooth absolute inset-0 contain-layout">
             {isLoading ? (
@@ -163,8 +233,23 @@ const ParticipantList = ({
                   </div>
                 ))}
               </div>
+            ) : filteredParticipants.length === 0 ? (
+              // Empty state when no participants match the filter
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="text-gray-400 mb-2">
+                  <svg className="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <p className="text-sm text-gray-500">
+                  No participants match the "{activeFilter === 'not-voted' ? 'Not Voted' : activeFilter === 'voted' ? 'Voted' : 'Skipped'}" filter
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Try selecting a different filter
+                </p>
+              </div>
             ) : (
-              sortedParticipants.map((participant, index) => (
+              filteredParticipants.map((participant, index) => (
               <div
                 key={participant.id}
                 className={`group bg-white/95 backdrop-blur-sm p-2.5 sm:p-3 rounded-xl shadow-sm border will-change-transform ${styles.participantCard}
