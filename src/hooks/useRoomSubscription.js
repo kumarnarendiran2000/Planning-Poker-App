@@ -38,9 +38,13 @@ export const useRoomSubscription = (roomId, state, navigation) => {
           }
           
           // Small delay to ensure toast renders before navigation (or immediate for host)
-          setTimeout(() => {
+          const navTimer = setTimeout(() => {
             navigate('/', { replace: true });
           }, isHost ? 100 : 500); // Shorter delay for host since no toast
+          
+          // Store timer reference for cleanup
+          if (!window.roomSubscriptionTimers) window.roomSubscriptionTimers = new Set();
+          window.roomSubscriptionTimers.add(navTimer);
         } else {
           // User deleted it themselves, just navigate
           navigate('/', { replace: true });
@@ -99,9 +103,13 @@ export const useRoomSubscription = (roomId, state, navigation) => {
             StorageUtils.clearRoomData(roomId);
             
             // Redirect after short delay to show message
-            setTimeout(() => {
+            const redirectTimer = setTimeout(() => {
               navigate('/', { replace: true });
             }, 2000);
+            
+            // Store timer reference for cleanup
+            if (!window.roomSubscriptionTimers) window.roomSubscriptionTimers = new Set();
+            window.roomSubscriptionTimers.add(redirectTimer);
             
             return prevParticipants; // Don't update state, we're leaving anyway
           }
@@ -156,6 +164,12 @@ export const useRoomSubscription = (roomId, state, navigation) => {
       
       if (unsubscribe) {
         unsubscribe();
+      }
+      
+      // Clean up any pending timers
+      if (window.roomSubscriptionTimers) {
+        window.roomSubscriptionTimers.forEach(timer => clearTimeout(timer));
+        window.roomSubscriptionTimers.clear();
       }
       
       // Remove the deleting marker

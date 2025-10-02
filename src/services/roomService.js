@@ -302,10 +302,8 @@ class RoomService {
           sendNotifications(); // Fire and forget
         })();
         
-        // Give clients time to receive the status update
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
         // Explicitly clean up each participant to ensure they're removed
+        // Firebase's real-time nature will notify clients immediately
         const participantPromises = Object.keys(roomData.participants).map(participantId => {
           const participantRef = this.getParticipantRef(roomId, participantId);
           return remove(participantRef);

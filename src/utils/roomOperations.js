@@ -175,8 +175,7 @@ export const joinRoom = async (roomCode, name) => {
         // Always notify admin (with admin-specific content)
         await firestoreEmailService.notifyParticipantJoined(participantData, 'kumarnarendiran2000@gmail.com', true);
         
-        // Small delay to ensure room data is fully propagated
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Use Firebase's real-time database consistency - no artificial delays needed
         
         // Get room data to check for user email notifications
         const roomRef = ref(db, `rooms/${roomCode}`);
