@@ -26,7 +26,7 @@ const FeedbackButton = ({ roomId, userRole, userName }) => {
           onClick={handleOpenModal}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
-          className="group relative bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transition-shadow duration-200 p-3 sm:p-4 flex items-center gap-2"
+          className="group relative bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transition-shadow duration-200 p-2 sm:p-3 flex items-center gap-2"
           title="Share Feedback"
         >
           {/* Floating text label */}
