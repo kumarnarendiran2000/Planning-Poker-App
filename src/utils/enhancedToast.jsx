@@ -157,7 +157,8 @@ const createCancelableToast = (message, type, options = {}) => {
   
   // Guaranteed backup timer - ensures toast ALWAYS closes after 15 seconds
   const backupTimer = setTimeout(() => {
-    toast.remove(toastId);
+    // Use requestAnimationFrame to prevent handler performance warnings
+    requestAnimationFrame(() => toast.remove(toastId));
   }, TOAST_DURATION);
   
   // Store the timer so it can be cleared if toast is manually dismissed
@@ -335,8 +336,11 @@ const enhancedToast = {
     
     // Backup timer for confirm toasts - auto-cancel after 15 seconds
     const backupTimer = setTimeout(() => {
-      toast.remove(toastId);
-      onCancel?.(); // Call cancel callback if no action taken
+      // Use requestAnimationFrame to prevent handler performance warnings
+      requestAnimationFrame(() => {
+        toast.remove(toastId);
+        onCancel?.(); // Call cancel callback if no action taken
+      });
     }, TOAST_DURATION);
     
     // Store the timer

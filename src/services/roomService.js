@@ -234,17 +234,10 @@ class RoomService {
       
       // Auto-clear reset notification after 30 seconds to prevent it showing to late joiners
       // This ensures new participants don't see old reset notifications
-      setTimeout(async () => {
-        try {
-          // Double-check the timestamp before clearing to avoid clearing newer notifications
-          const currentNotification = await get(resetNotificationRef);
-          if (currentNotification.exists() && 
-              currentNotification.val()?.timestamp === resetTimestamp) {
-            await set(resetNotificationRef, null);
-          }
-        } catch (error) {
-          console.error('Error auto-clearing reset notification:', error);
-        }
+      setTimeout(() => {
+        // Use non-async setTimeout handler to prevent performance warnings
+        // Move async operations to separate function
+        this.clearResetNotificationSafely(resetNotificationRef, resetTimestamp);
       }, 30000); // 30 seconds
       
       return true;
@@ -262,6 +255,24 @@ class RoomService {
   static async clearResetNotification(roomId) {
     const resetNotificationRef = FirebaseRefs.getResetNotificationRef(roomId);
     return set(resetNotificationRef, null);
+  }
+
+  /**
+   * Safely clear reset notification with timestamp check (optimized for performance)
+   * @param {object} resetNotificationRef - Firebase reference to reset notification
+   * @param {number} resetTimestamp - The timestamp to verify before clearing
+   */
+  static async clearResetNotificationSafely(resetNotificationRef, resetTimestamp) {
+    try {
+      // Double-check the timestamp before clearing to avoid clearing newer notifications
+      const currentNotification = await get(resetNotificationRef);
+      if (currentNotification.exists() && 
+          currentNotification.val()?.timestamp === resetTimestamp) {
+        await set(resetNotificationRef, null);
+      }
+    } catch (error) {
+      console.error('Error auto-clearing reset notification:', error);
+    }
   }
 
   /**
@@ -301,7 +312,10 @@ class RoomService {
                 roomCode: roomId,
                 deletedBy,
                 deletedAt: Date.now(),
-                participantCount: Object.keys(roomData.participants).length
+                participantCount: Object.keys(roomData.participants).length,
+                roomAge: roomData.createdAt ? Math.round((Date.now() - roomData.createdAt) / (1000 * 60 * 60)) : 'Unknown',
+                deletionType: deletedBy.includes('System Cleanup') ? 'automatic' : 'manual',
+                roomCreatedAt: roomData.createdAt || Date.now()
               };
               
               // Always notify admin
@@ -358,7 +372,7 @@ class RoomService {
       
       if (isEmpty) {
         // Room is empty, delete it
-        await this.deleteRoom(roomId);
+        await this.deleteRoom(roomId, 'System Cleanup (Empty Room)');
         return true;
       }
       
@@ -405,8 +419,8 @@ class RoomService {
         // Delete room if it's old OR has invalid future timestamp
         if ((roomData.createdAt && isOldRoom) || isFutureTimestamp) {
           try {
-            const reason = isFutureTimestamp ? 'invalid timestamp' : `>${hoursThreshold}h old`;
-            await this.deleteRoom(roomId);
+            const reason = isFutureTimestamp ? 'System Cleanup (Invalid Timestamp)' : `System Cleanup (${hoursThreshold}h+ Inactive)`;
+            await this.deleteRoom(roomId, reason);
             deletedRooms.push(roomId);
           } catch (error) {
             console.error(`❌ Failed to delete room ${roomId}:`, error);
