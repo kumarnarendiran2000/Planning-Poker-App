@@ -237,9 +237,10 @@ class RoomService {
    * Delete a room
    * 
    * @param {string} roomId - The room ID
+   * @param {string} deletedBy - Name of person who deleted the room
    * @returns {Promise} Promise resolving when room is deleted
    */
-  static async deleteRoom(roomId) {
+  static async deleteRoom(roomId, deletedBy = 'Host') {
     try {
       // First, get room data to have a list of participants
       const roomData = await this.getRoomData(roomId);
@@ -247,6 +248,33 @@ class RoomService {
       if (roomData && roomData.participants) {
         // Update room status to signal deletion to all clients
         await this.updateRoomStatus(roomId, 'deleting');
+        
+        // Send email notifications before deletion (non-blocking)
+        (() => {
+          const sendNotifications = async () => {
+            try {
+              const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
+              
+              const deletionData = {
+                roomCode: roomId,
+                deletedBy,
+                deletedAt: Date.now(),
+                participantCount: Object.keys(roomData.participants).length
+              };
+              
+              // Always notify admin
+              await firestoreEmailService.notifyRoomDeleted(deletionData, 'kumarnarendiran2000@gmail.com', true);
+              
+              // Notify room creator if they have email notifications enabled
+              if (roomData.emailNotifications?.enabled && roomData.emailNotifications?.userEmail) {
+                await firestoreEmailService.notifyRoomDeleted(deletionData, roomData.emailNotifications.userEmail, false);
+              }
+            } catch (emailError) {
+              // Email notification failed - continue with room deletion
+            }
+          };
+          sendNotifications(); // Fire and forget
+        })();
         
         // Give clients time to receive the status update
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -375,11 +403,55 @@ class RoomService {
    * 
    * @param {string} roomId - The room ID
    * @param {string} participantId - The participant ID
+   * @param {string} participantName - Name of participant being removed (for email)
+   * @param {string} reason - Reason for removal ('kicked', 'left', 'disconnected')
    * @returns {Promise} Promise resolving when participant is removed
    */
-  static async removeParticipant(roomId, participantId) {
-    const participantRef = this.getParticipantRef(roomId, participantId);
-    return remove(participantRef);
+  static async removeParticipant(roomId, participantId, participantName = null, reason = 'left') {
+    try {
+      // Remove from Firebase first
+      const participantRef = this.getParticipantRef(roomId, participantId);
+      await remove(participantRef);
+      
+      // Send email notifications if we have participant info (non-blocking)
+      if (participantName) {
+        (() => {
+          const sendNotifications = async () => {
+            try {
+              const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
+              
+              const participantData = {
+                roomCode: roomId,
+                participantName,
+                leftAt: Date.now(),
+                reason
+              };
+              
+              // Always notify admin
+              await firestoreEmailService.notifyParticipantLeft(participantData, 'kumarnarendiran2000@gmail.com', true);
+              
+              // Get room data to check for user email notifications
+              const roomRef = this.getRoomRef(roomId);
+              const roomSnapshot = await get(roomRef);
+              if (roomSnapshot.exists()) {
+                const roomData = roomSnapshot.val();
+                if (roomData.emailNotifications?.enabled && roomData.emailNotifications?.userEmail) {
+                  await firestoreEmailService.notifyParticipantLeft(participantData, roomData.emailNotifications.userEmail, false);
+                }
+              }
+            } catch (emailError) {
+              // Email notification failed - continue with participant removal
+            }
+          };
+          sendNotifications(); // Fire and forget
+        })();
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error removing participant:', error);
+      throw error;
+    }
   }
 
   /**
@@ -387,10 +459,17 @@ class RoomService {
    * @param {string} roomId - The room ID
    * @param {string} participantId - The participant ID to kick
    * @param {string} hostName - The name of the host
+   * @param {string} participantName - The name of the participant being kicked
    * @returns {Promise} Promise resolving when participant is kicked
    */
-  static async kickParticipant(roomId, participantId, hostName) {
+  static async kickParticipant(roomId, participantId, hostName, participantName = null) {
     try {
+      // Get participant name if not provided
+      if (!participantName) {
+        const roomData = await this.getRoomData(roomId);
+        participantName = roomData?.participants?.[participantId]?.name || 'Unknown Participant';
+      }
+      
       // First mark the participant as kicked
       const kickedRef = FirebaseRefs.getKickedRef(roomId, participantId);
       await set(kickedRef, {
@@ -401,8 +480,8 @@ class RoomService {
       // Give a small delay for the kicked status to be processed by the client
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Then remove the participant
-      return this.removeParticipant(roomId, participantId);
+      // Then remove the participant with email notification
+      return this.removeParticipant(roomId, participantId, participantName, 'kicked');
     } catch (error) {
       console.error('Error kicking participant:', error);
       throw error;

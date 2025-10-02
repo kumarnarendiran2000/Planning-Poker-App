@@ -62,7 +62,8 @@ const ActiveSessions = ({ onSessionDeleted }) => {
       try {
         const roomExists = await RoomService.checkRoomExists(session.roomId);
         if (roomExists && session.sessionId) {
-          await RoomService.removeParticipant(session.roomId, session.sessionId);
+          // Remove participant with email notification
+          await RoomService.removeParticipant(session.roomId, session.sessionId, session.userName, 'left');
           
           // If the leaving participant is the host, delete the entire room
           if (session.isHost) {
@@ -70,7 +71,7 @@ const ActiveSessions = ({ onSessionDeleted }) => {
               // Mark that the host is deleting the room
               StorageUtils.markRoomDeleting(session.roomId);
               
-              await RoomService.deleteRoom(session.roomId);
+              await RoomService.deleteRoom(session.roomId, session.userName);
             } catch (deleteError) {
               // Failed to delete room after host left
             }

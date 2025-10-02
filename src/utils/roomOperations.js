@@ -3,10 +3,11 @@
  * Helper functions for creating and managing rooms
  */
 
-import { ref, set } from 'firebase/database';
+import { ref, set, get } from 'firebase/database';
 import { db } from '../firebase/config';
 import { v4 as uuidv4 } from 'uuid';
 import * as StorageUtils from './localStorage';
+import firestoreEmailService from '../services/firestoreEmailService';
 
 /**
  * Generate a random room code
@@ -71,14 +72,26 @@ export const createParticipantData = (name, isHost = false, isParticipant = true
  * Create a new room in Firebase
  * @param {string} hostName - Name of the host
  * @param {boolean} hostParticipates - Whether the host participates in voting
+ * @param {Object} emailConfig - Email notification configuration
  * @returns {Promise<Object>} Promise resolving to { roomCode, sessionId }
  */
-export const createRoom = async (hostName, hostParticipates = true) => {
+export const createRoom = async (hostName, hostParticipates = true, emailConfig = null) => {
   const roomCode = generateRoomCode();
   const hostSessionId = generateSessionId();
   
   // Create room data
   const roomData = createRoomData(roomCode, hostSessionId, hostName, hostParticipates);
+  
+  // Add email configuration to room data if provided
+  if (emailConfig?.enabled) {
+    roomData.emailNotifications = {
+      enabled: true,
+      userEmail: emailConfig.userEmail || null,
+      notifyParticipantJoins: true,
+      notifyParticipantLeaves: true,
+      notifyRoomDeletion: true
+    };
+  }
   
   // Save room to Firebase
   await set(ref(db, `rooms/${roomCode}`), roomData);
@@ -95,6 +108,31 @@ export const createRoom = async (hostName, hostParticipates = true) => {
     isHost: true,
     isParticipant: hostParticipates
   });
+  
+  // Send email notifications for room creation (non-blocking for better performance)
+  (() => {
+    const sendNotifications = async () => {
+      try {
+        const emailData = {
+          roomCode,
+          hostName: hostName.trim(),
+          hostRole: hostParticipates ? 'Host & Participant' : 'Facilitator Only',
+          createdAt: Date.now()
+        };
+        
+        // Always notify admin (with admin-specific content)
+        await firestoreEmailService.notifyRoomCreated(emailData, 'kumarnarendiran2000@gmail.com', true);
+        
+        // Notify user if they opted in (with user-friendly content)
+        if (emailConfig?.enabled && emailConfig?.userEmail) {
+          await firestoreEmailService.notifyRoomCreated(emailData, emailConfig.userEmail, false);
+        }
+      } catch (error) {
+        // Email notification failed - continue with room creation
+      }
+    };
+    sendNotifications(); // Fire and forget
+  })();
   
   return { roomCode, sessionId: hostSessionId };
 };
@@ -122,6 +160,40 @@ export const joinRoom = async (roomCode, name) => {
     isHost: false,
     isParticipant: true
   });
+  
+  // Send email notifications for participant joining (non-blocking for better performance)
+  (() => {
+    const sendNotifications = async () => {
+      try {
+        const participantData = {
+          roomCode,
+          participantName: name.trim(),
+          joinedAt: Date.now()
+        };
+        
+        // Always notify admin (with admin-specific content)
+        await firestoreEmailService.notifyParticipantJoined(participantData, 'kumarnarendiran2000@gmail.com', true);
+        
+        // Small delay to ensure room data is fully propagated
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Get room data to check for user email notifications
+        const roomRef = ref(db, `rooms/${roomCode}`);
+        const roomSnapshot = await get(roomRef);
+        
+        if (roomSnapshot.exists()) {
+          const roomData = roomSnapshot.val();
+          
+          if (roomData.emailNotifications?.enabled && roomData.emailNotifications?.userEmail) {
+            await firestoreEmailService.notifyParticipantJoined(participantData, roomData.emailNotifications.userEmail, false);
+          }
+        }
+      } catch (error) {
+        // Email notification failed - continue with participant join
+      }
+    };
+    sendNotifications(); // Fire and forget
+  })();
   
   return sessionId;
 };

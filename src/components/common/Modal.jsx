@@ -91,17 +91,17 @@ const Modal = ({
   const currentStyle = modalStyles[type];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Enhanced backdrop with animation */}
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+      {/* Enhanced backdrop with complete coverage */}
       <div 
-        className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-sm animate-fadeIn" 
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fadeIn z-[9998]" 
         onClick={onClose}
       ></div>
       
-      {/* Enhanced modal with colorful borders and animations (removed hover effects) */}
+      {/* Enhanced modal with colorful borders and animations */}
       <div className={`
-        relative z-50 bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden 
-        animate-modalSlideIn
+        relative z-[10000] bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden 
+        animate-modalSlideIn max-h-[90vh] overflow-y-auto
         ${currentStyle.border} ${currentStyle.shadow}
         ${className}
       `}>

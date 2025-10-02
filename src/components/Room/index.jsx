@@ -109,8 +109,8 @@ const Room = () => {
           // Get host's name for the notification
           const hostName = participants[sessionId]?.name || 'Host';
           
-          // Kick the participant
-          await RoomService.kickParticipant(roomId, participantId, hostName);
+          // Kick the participant (now includes email notifications)
+          await RoomService.kickParticipant(roomId, participantId, hostName, participantName);
           
           // Show success notification
           enhancedToast.success(`${participantName} has been removed from the room`);

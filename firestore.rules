@@ -1,0 +1,14 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read/write access to the mail collection for Firebase Trigger Email extension
+    match /mail/{document} {
+      allow read, write: if true;
+    }
+    
+    // Allow read/write access to email templates (if using templates)
+    match /email_templates/{document} {
+      allow read, write: if true;
+    }
+  }
+}

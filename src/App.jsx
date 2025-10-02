@@ -41,14 +41,14 @@ function Home() {
               <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
                 <h1 className="text-3xl font-bold text-center mb-4 text-gray-800">Planning Poker</h1>
                 
-                {/* About button */}
-                <div className="text-center mb-6">
+                {/* Action buttons */}
+                <div className="flex flex-wrap justify-center gap-3 mb-6">
                   <button
                     onClick={() => setShowAboutModal(true)}
                     className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white text-sm font-medium rounded-full shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
                   >
                     <span className="mr-2">ℹ️</span>
-                    Learn About Planning Poker
+                    Learn about Planning Poker
                   </button>
                 </div>
                 
@@ -74,10 +74,10 @@ function Home() {
         </div>
       </div>
       
-      {/* About Modal */}
+      {/* Modals */}
       <AboutModal 
-        isOpen={showAboutModal}
-        onClose={() => setShowAboutModal(false)}
+        isOpen={showAboutModal} 
+        onClose={() => setShowAboutModal(false)} 
       />
     </div>
   )

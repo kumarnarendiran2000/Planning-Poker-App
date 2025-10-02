@@ -9,7 +9,7 @@ import enhancedToast from '../utils/enhancedToast.jsx';
  * Handles user actions within the room
  */
 export const useRoomOperations = (roomId, state, navigation, alertFunctions) => {
-  const { isHost, setShowNameModal } = state;
+  const { isHost, setShowNameModal, participants, sessionId } = state;
   const { navigate } = navigation;
   const { showError, showSuccess } = alertFunctions;
 
@@ -82,9 +82,12 @@ export const useRoomOperations = (roomId, state, navigation, alertFunctions) => 
       const loadingToast = enhancedToast.loading('Deleting room...');
       
       try {
+        // Get host's name for email notifications
+        const hostName = participants?.[sessionId]?.name || 'Host';
+        
         // Delete the room using our improved deletion method
-        // (This now handles notifying clients, cleaning up participants, etc.)
-        await RoomService.deleteRoom(roomId);
+        // (This now handles notifying clients, cleaning up participants, and sending emails)
+        await RoomService.deleteRoom(roomId, hostName);
         
         // Clear the host's localStorage data immediately after successful deletion
         StorageUtils.clearRoomData(roomId);
