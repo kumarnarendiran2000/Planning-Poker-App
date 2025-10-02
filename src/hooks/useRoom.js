@@ -4,6 +4,7 @@ import { useRoomState } from './useRoomState';
 import { useRoomInitialization } from './useRoomInitialization';
 import { useRoomSubscription } from './useRoomSubscription';
 import { useRoomOperations } from './useRoomOperations';
+import { useStoryOperations } from './useStoryOperations';
 
 /**
  * Custom hook for managing room state and operations
@@ -38,6 +39,9 @@ const useRoom = (roomId, alertFunctions = {}) => {
   
   // Room operations (join, delete)
   const { joinRoom, deleteRoom } = useRoomOperations(roomId, state, navigation, alerts);
+  
+  // Story operations (update)
+  const { updateStory } = useStoryOperations(roomId, state.isHost);
 
   return {
     loading: state.loading,
@@ -46,13 +50,15 @@ const useRoom = (roomId, alertFunctions = {}) => {
     revealed: state.revealed,
     countdown: state.countdown,
     resetState: state.resetState,
+    story: state.story,
     showNameModal: state.showNameModal,
     setShowNameModal: state.setShowNameModal,
     userName: state.userName,
     sessionId: state.sessionId,
     isHost: state.isHost,
     joinRoom,
-    deleteRoom
+    deleteRoom,
+    updateStory
   };
 };
 

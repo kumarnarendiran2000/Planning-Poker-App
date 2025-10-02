@@ -98,3 +98,27 @@ export const getCountdownRef = (roomId) => {
 export const getResetStateRef = (roomId) => {
   return ref(db, `${FIREBASE_PATHS.ROOMS}/${roomId}/resetState`);
 };
+
+/**
+ * Get a reference to room story
+ * @param {string} roomId - The room ID
+ * @returns {Object} Firebase reference
+ */
+export const getStoryRef = (roomId) => {
+  return ref(db, `${FIREBASE_PATHS.ROOMS}/${roomId}/story`);
+};
+
+// Export all functions as a single object for easier usage
+export default {
+  getRoomsRef,
+  getRoomRef,
+  getParticipantRef,
+  getRevealedRef,
+  getStatusRef,
+  getVoteRef,
+  getKickedRef,
+  getResetNotificationRef,
+  getCountdownRef,
+  getResetStateRef,
+  getStoryRef
+};

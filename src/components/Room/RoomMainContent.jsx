@@ -36,9 +36,9 @@ const RoomMainContent = ({
   const isParticipant = currentUser ? isParticipantFromFirebase : isParticipantFromStorage;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 lg:gap-6 xl:gap-8 2xl:gap-10 min-h-[600px] flex-1">
+    <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8 2xl:gap-10 min-h-[500px] sm:min-h-[600px] flex-1">
       {/* Participants List - Responsive width for large screens */}
-      <div className="lg:flex-shrink-0 flex flex-col min-h-[400px] lg:min-h-[600px] lg:w-80 xl:w-96 2xl:w-[28rem]">
+      <div className="lg:flex-shrink-0 flex flex-col min-h-[300px] sm:min-h-[400px] lg:min-h-[600px] lg:w-80 xl:w-96 2xl:w-[28rem]">
         <ParticipantList 
           participants={participants}
           sessionId={sessionId}
@@ -49,9 +49,9 @@ const RoomMainContent = ({
       </div>
 
       {/* Main Content Area - Full height with proper distribution */}
-      <div className="flex-1 flex flex-col gap-4 sm:gap-5 lg:gap-6 xl:gap-8 2xl:gap-10 min-w-0 min-h-[600px]">
+      <div className="flex-1 flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8 2xl:gap-10 min-w-0 min-h-[500px] sm:min-h-[600px]">
         {/* Statistics Panel */}
-        <div className="flex-shrink-0 min-h-[200px] xl:min-h-[240px] 2xl:min-h-[280px]">
+        <div className="flex-shrink-0 min-h-[160px] sm:min-h-[200px] xl:min-h-[240px] 2xl:min-h-[280px]">
           <StatisticsPanel 
             stats={stats}
             revealed={revealed}
@@ -63,7 +63,7 @@ const RoomMainContent = ({
         </div>
         
         {/* Voting Area - Takes remaining space */}
-        <div className="flex-1 min-h-[300px] xl:min-h-[360px] 2xl:min-h-[420px]">
+        <div className="flex-1 min-h-[250px] sm:min-h-[300px] xl:min-h-[360px] 2xl:min-h-[420px]">
           <RoomVotingArea
             vote={vote}
             revealed={revealed}

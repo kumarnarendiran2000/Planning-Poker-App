@@ -10,5 +10,13 @@ service cloud.firestore {
     match /email_templates/{document} {
       allow read, write: if true;
     }
+    
+    // Allow access to feedback collection for user feedback submissions and analytics
+    // Users can create and read feedback, but cannot modify/delete existing feedback
+    match /feedbacks/{document} {
+      allow create: if true; // Anyone can submit feedback
+      allow read: if true; // Allow reading for analytics dashboard
+      allow update, delete: if false; // Prevent modification/deletion for data integrity
+    }
   }
 }

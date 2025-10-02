@@ -8,7 +8,7 @@ import enhancedToast from '../utils/enhancedToast.jsx';
  * Handles real-time updates from Firebase for room data
  */
 export const useRoomSubscription = (roomId, state, navigation) => {
-  const { roomExists, sessionId, isHost, setParticipants, setRevealed, setCountdown, setResetState } = state;
+  const { roomExists, sessionId, isHost, setParticipants, setRevealed, setCountdown, setResetState, setStory } = state;
   const { navigate } = navigation;
   const lastResetTimestamp = useRef(null);
 
@@ -116,6 +116,9 @@ export const useRoomSubscription = (roomId, state, navigation) => {
       });
       
       setRevealed(roomData.revealed || false);
+      
+      // Update story
+      setStory(roomData.story || '');
       
       // Update countdown status
       setCountdown(roomData.countdown || null);

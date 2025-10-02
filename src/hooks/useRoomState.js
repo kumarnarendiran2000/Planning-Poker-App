@@ -13,6 +13,7 @@ export const useRoomState = (roomId) => {
   const [showNameModal, setShowNameModal] = useState(false);
   const [countdown, setCountdown] = useState(null);
   const [resetState, setResetState] = useState(null);
+  const [story, setStory] = useState('');
   
   // Get user data from storage
   const userName = StorageUtils.getUserName(roomId);
@@ -28,6 +29,7 @@ export const useRoomState = (roomId) => {
     showNameModal,
     countdown,
     resetState,
+    story,
     userName,
     sessionId,
     isHost,
@@ -39,6 +41,7 @@ export const useRoomState = (roomId) => {
     setRevealed,
     setShowNameModal,
     setCountdown,
-    setResetState
+    setResetState,
+    setStory
   };
 };

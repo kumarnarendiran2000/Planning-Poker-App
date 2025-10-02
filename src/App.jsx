@@ -1,13 +1,46 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import CreateRoom from './components/CreateRoom'
 import JoinRoom from './components/JoinRoom'
 import ActiveSessions from './components/ActiveSessions'
 import Room from './components/Room/index'
+import FeedbackAnalytics from './components/admin/FeedbackAnalytics'
 import AboutModal from './components/modals/AboutModal'
 import { runCleanupIfNeeded } from './services/cleanupService'
 import { useActiveSessionMonitor } from './hooks/useActiveSessionMonitor'
+
+// Navigation Header Component (only for analytics page)
+function NavigationHeader() {
+  const location = useLocation();
+  const isAnalyticsPage = location.pathname === '/admin/feedback';
+  
+  // Only show header on analytics page
+  if (!isAnalyticsPage) return null;
+  
+  return (
+    <header className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-b border-gray-200 shadow-sm z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <Link to="/" className="flex items-center gap-2 text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
+            <span className="text-2xl">🃏</span>
+            <span>Planning Poker</span>
+          </Link>
+          
+          <nav className="flex items-center gap-4">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white text-sm font-medium rounded-full shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+            >
+              <span>🏠</span>
+              <span>Back to Home</span>
+            </Link>
+          </nav>
+        </div>
+      </div>
+    </header>
+  );
+}
 
 function Home() {
   // State to force re-render when sessions change
@@ -83,16 +116,48 @@ function Home() {
   )
 }
 
+// Feedback Analytics Page Component
+function FeedbackAnalyticsPage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 pt-20 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">📊 Feedback Analytics Dashboard</h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Comprehensive insights into user feedback, suggestions, and improvement requests from your Planning Poker sessions.
+            </p>
+          </div>
+        </div>
+        
+        {/* Analytics Component */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+          <FeedbackAnalytics />
+        </div>
+        
+        {/* Footer Info */}
+        <div className="mt-8 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-sm text-gray-600 shadow-sm">
+            <span>🔄</span>
+            <span>Data updates in real-time • Last updated: {new Date().toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   return (
     <BrowserRouter>
+      <NavigationHeader />
       <Toaster 
         position="top-center" 
         reverseOrder={false}
         gutter={8}
         containerClassName=""
         containerStyle={{
-          top: 20,
+          top: 20, // Reset to normal since header only on analytics
           left: 20,
           bottom: 20,
           right: 20,
@@ -112,6 +177,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/room/:roomId" element={<Room />} />
+        <Route path="/admin/feedback" element={<FeedbackAnalyticsPage />} />
       </Routes>
     </BrowserRouter>
   )

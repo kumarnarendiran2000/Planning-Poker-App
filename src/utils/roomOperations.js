@@ -37,6 +37,7 @@ export const createRoomData = (roomCode, hostSessionId, hostName, hostParticipat
   return {
     roomCode,
     status: 'waiting',
+    story: '',
     participants: {
       [hostSessionId]: {
         name: hostName.trim(),

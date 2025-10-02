@@ -140,6 +140,28 @@ class RoomService {
   }
 
   /**
+   * Update story name/number
+   * @param {string} roomId - The room ID
+   * @param {string} story - The story name/number
+   * @returns {Promise} Promise resolving when story is updated
+   */
+  static async updateStory(roomId, story) {
+    const storyRef = FirebaseRefs.getStoryRef(roomId);
+    return set(storyRef, story || '');
+  }
+
+  /**
+   * Get story name/number
+   * @param {string} roomId - The room ID
+   * @returns {Promise<string>} Promise resolving to story name/number
+   */
+  static async getStory(roomId) {
+    const storyRef = FirebaseRefs.getStoryRef(roomId);
+    const snapshot = await get(storyRef);
+    return snapshot.val() || '';
+  }
+
+  /**
    * Start reset state to show loading for all participants
    * @param {string} roomId - The room ID
    * @returns {Promise} Promise resolving when reset state is set
@@ -188,6 +210,10 @@ class RoomService {
       // Reset revealed status first
       const revealedRef = FirebaseRefs.getRevealedRef(roomId);
       await set(revealedRef, false);
+      
+      // Reset story name/number
+      const storyRef = FirebaseRefs.getStoryRef(roomId);
+      await set(storyRef, '');
       
       // Reset all participant votes individually using set operations
       const resetPromises = Object.keys(roomData.participants).map(async (participantId) => {
