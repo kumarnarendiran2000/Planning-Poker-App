@@ -7,7 +7,6 @@ import { ref, set, get } from 'firebase/database';
 import { db } from '../firebase/config';
 import { v4 as uuidv4 } from 'uuid';
 import * as StorageUtils from './localStorage';
-import firestoreEmailService from '../services/firestoreEmailService';
 
 /**
  * Generate a random room code
@@ -122,10 +121,12 @@ export const createRoom = async (hostName, hostParticipates = true, emailConfig 
         };
         
         // Always notify admin (with admin-specific content)
+        const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
         await firestoreEmailService.notifyRoomCreated(emailData, 'kumarnarendiran2000@gmail.com', true);
         
         // Notify user if they opted in (with user-friendly content)
         if (emailConfig?.enabled && emailConfig?.userEmail) {
+          const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
           await firestoreEmailService.notifyRoomCreated(emailData, emailConfig.userEmail, false);
         }
       } catch (error) {
@@ -173,6 +174,7 @@ export const joinRoom = async (roomCode, name) => {
         };
         
         // Always notify admin (with admin-specific content)
+        const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
         await firestoreEmailService.notifyParticipantJoined(participantData, 'kumarnarendiran2000@gmail.com', true);
         
         // Use Firebase's real-time database consistency - no artificial delays needed
@@ -185,6 +187,7 @@ export const joinRoom = async (roomCode, name) => {
           const roomData = roomSnapshot.val();
           
           if (roomData.emailNotifications?.enabled && roomData.emailNotifications?.userEmail) {
+            const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
             await firestoreEmailService.notifyParticipantJoined(participantData, roomData.emailNotifications.userEmail, false);
           }
         }
