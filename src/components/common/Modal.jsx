@@ -105,9 +105,20 @@ const Modal = ({
         ${currentStyle.border} ${currentStyle.shadow}
         ${className}
       `}>
+        {/* Top-right close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors z-10 group"
+          aria-label="Close modal"
+        >
+          <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
         {/* Enhanced Header with gradient and colorful styling */}
         {title && (
-          <div className={`px-6 py-5 ${currentStyle.headerBg} ${currentStyle.headerBorder}`}>
+          <div className={`px-6 py-5 pr-12 ${currentStyle.headerBg} ${currentStyle.headerBorder}`}>
             <div className="flex items-center">
               {icons[type]}
               <h3 className={`text-xl font-bold ${currentStyle.textColor} tracking-wide`}>
@@ -118,7 +129,7 @@ const Modal = ({
         )}
 
         {/* Enhanced Body with better spacing */}
-        <div className="px-6 py-5 bg-gradient-to-br from-white to-gray-50">
+        <div className={`px-6 py-5 bg-gradient-to-br from-white to-gray-50 ${!title ? 'pr-12 pt-12' : ''}`}>
           {children}
         </div>
 

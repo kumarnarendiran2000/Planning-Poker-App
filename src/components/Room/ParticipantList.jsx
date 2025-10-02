@@ -241,25 +241,23 @@ const ParticipantList = ({
     if (facilitators > 0) {
       // Facilitator session
       return (
-        <div className="text-center leading-tight">
-          <div className="text-xs font-medium">
-            {regularParticipants + hostParticipants} participants, {facilitators} facilitator
-          </div>
-          <div className="text-xs text-purple-700">
-            {totalCount} total, {votingStrength} voting
-          </div>
+        <div className="text-sm text-gray-600 flex flex-wrap items-center justify-center gap-1">
+          <span>{regularParticipants + hostParticipants} participants,</span>
+          <span>{facilitators} facilitator •</span>
+          <span className="text-purple-600 font-medium">{totalCount} total,</span>
+          <span className="text-purple-600 font-medium">{votingStrength} voting</span>
         </div>
       );
     } else {
       // All participants session (including host participants)
       return (
-        <div className="text-center leading-tight">
-          <div className="text-xs font-medium">
-            {regularParticipants} participants{hostParticipants > 0 ? `, ${hostParticipants} host participant` : ''}
-          </div>
-          <div className="text-xs text-purple-700">
-            {totalCount} total, {votingStrength} voting
-          </div>
+        <div className="text-sm text-gray-600 flex flex-wrap items-center justify-center gap-1">
+          <span>{regularParticipants} participants{hostParticipants > 0 ? ',' : ' •'}</span>
+          {hostParticipants > 0 && (
+            <span>{hostParticipants} host participant •</span>
+          )}
+          <span className="text-purple-600 font-medium">{totalCount} total,</span>
+          <span className="text-purple-600 font-medium">{votingStrength} voting</span>
         </div>
       );
     }
@@ -268,11 +266,11 @@ const ParticipantList = ({
   return (
     <div className={`w-full flex flex-col h-full min-h-[400px] ${styles.participantContainer}`}>
       <div className="bg-gradient-to-br from-indigo-50 to-purple-50 backdrop-blur-sm rounded-xl shadow-lg p-2 sm:p-3 lg:p-4 xl:p-5 2xl:p-6 flex-1 flex flex-col min-w-0 border border-indigo-100 h-full min-h-[400px]">
-        <div className="flex items-center justify-between mb-2 sm:mb-3 xl:mb-4 2xl:mb-5 flex-shrink-0 min-h-[40px]">
-          <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-800 flex-shrink-0">
+        <div className="mb-3 sm:mb-4 flex-shrink-0">
+          <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-800 text-center mb-2">
             Participants
           </h2>
-          <div className="px-2 py-1 sm:px-3 sm:py-1.5 xl:px-4 xl:py-2 2xl:px-5 2xl:py-2.5 bg-purple-100 text-purple-700 rounded-full border border-purple-200 min-w-[120px] xl:min-w-[140px] 2xl:min-w-[160px] text-center flex-shrink-0 text-xs xl:text-sm 2xl:text-base">
+          <div className="text-center">
             {getBreakdownText()}
           </div>
         </div>

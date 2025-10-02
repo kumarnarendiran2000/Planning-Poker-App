@@ -289,19 +289,7 @@ const FeedbackModal = ({ isOpen, onClose, roomId, userRole, userName = '' }) => 
 
   // Render success message
   const renderSuccessMessage = () => (
-    <div className="relative">
-      {/* Close button in top right corner */}
-      <button
-        onClick={onClose}
-        className="absolute -top-2 -right-2 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors z-10"
-        aria-label="Close"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-      
-      <div className="text-center py-8">
+    <div className="text-center py-8">
         <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center shadow-lg">
           <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -332,7 +320,6 @@ const FeedbackModal = ({ isOpen, onClose, roomId, userRole, userName = '' }) => 
           <span>✅</span>
           <span>OK, Got it!</span>
         </button>
-      </div>
     </div>
   );
 
