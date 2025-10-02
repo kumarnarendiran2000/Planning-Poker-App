@@ -226,10 +226,26 @@ class RoomService {
       
       // Set reset notification for participants to see
       const resetNotificationRef = FirebaseRefs.getResetNotificationRef(roomId);
+      const resetTimestamp = Date.now();
       await set(resetNotificationRef, {
-        timestamp: Date.now(),
+        timestamp: resetTimestamp,
         notified: false
       });
+      
+      // Auto-clear reset notification after 30 seconds to prevent it showing to late joiners
+      // This ensures new participants don't see old reset notifications
+      setTimeout(async () => {
+        try {
+          // Double-check the timestamp before clearing to avoid clearing newer notifications
+          const currentNotification = await get(resetNotificationRef);
+          if (currentNotification.exists() && 
+              currentNotification.val()?.timestamp === resetTimestamp) {
+            await set(resetNotificationRef, null);
+          }
+        } catch (error) {
+          console.error('Error auto-clearing reset notification:', error);
+        }
+      }, 30000); // 30 seconds
       
       return true;
     } catch (error) {

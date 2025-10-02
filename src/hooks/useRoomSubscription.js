@@ -143,22 +143,28 @@ export const useRoomSubscription = (roomId, state, navigation) => {
       if (roomData.resetNotification && !isHost) {
         const { timestamp, notified } = roomData.resetNotification;
         
-        // Only show notification if it's new and hasn't been shown yet
+        // Get current participant's join time
+        const currentParticipant = roomData.participants[sessionId];
+        const participantJoinTime = currentParticipant?.joinedAt;
+        
+        // Only show notification if:
+        // 1. It's new and hasn't been shown yet
+        // 2. The participant exists and has a valid join time
+        // 3. The participant was in the room BEFORE the reset happened
+        // 4. This prevents new joiners from seeing old reset notifications
         if (timestamp && 
             timestamp !== lastResetTimestamp.current && 
-            !notified) {
+            !notified &&
+            participantJoinTime && // Ensure participant has a join time
+            participantJoinTime < timestamp) { // Key fix: only show if joined before reset
           
           lastResetTimestamp.current = timestamp;
           
           // Show toast notification to participant
           enhancedToast.info('The votes have been reset by host');
           
-          // Clear the notification after showing it
-          setTimeout(() => {
-            RoomService.clearResetNotification(roomId).catch(error => {
-              console.error('Error clearing reset notification:', error);
-            });
-          }, 1000); // Small delay to ensure all participants get the notification
+          // Mark this participant as notified (but don't clear the notification yet)
+          // Let the auto-cleanup in roomService handle the clearing after 30 seconds
         }
       }
     });

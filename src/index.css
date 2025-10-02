@@ -52,3 +52,17 @@
   background: rgba(0, 0, 0, 0.5);
 }
 
+/* Optimize scroll performance - prevent passive event listener warnings */
+* {
+  touch-action: manipulation; /* Improves touch responsiveness */
+}
+
+/* Specific optimizations for form elements */
+textarea,
+input,
+select {
+  touch-action: manipulation;
+  /* Improve scroll performance on mobile and VDI */
+  overscroll-behavior: contain;
+}
+

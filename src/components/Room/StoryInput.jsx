@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
+import enhancedToast from '../../utils/enhancedToast.jsx';
 
 /**
  * StoryInput component for displaying and editing the current story/user story being voted on
@@ -9,21 +10,59 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
   const [localStory, setLocalStory] = useState(storyName || '');
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const textareaRef = useRef(null);
 
   // Update local state when prop changes (e.g., on reset)
   useEffect(() => {
     setLocalStory(storyName || '');
   }, [storyName]);
 
+  // Add passive event listeners to prevent scroll-blocking warnings
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const handleWheel = (e) => {
+      // Allow default scroll behavior
+    };
+
+    const handleTouchMove = (e) => {
+      // Allow default touch behavior
+    };
+
+    // Add passive event listeners
+    textarea.addEventListener('wheel', handleWheel, { passive: true });
+    textarea.addEventListener('touchmove', handleTouchMove, { passive: true });
+
+    return () => {
+      textarea.removeEventListener('wheel', handleWheel);
+      textarea.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [isEditing]);
+
   const handleSave = async () => {
     if (!isHost || !onStoryUpdate) return;
     
+    const trimmedStory = localStory.trim();
+    const isNewStory = !storyName || storyName.trim() === '';
+    const isUpdating = storyName && storyName.trim() !== '' && storyName !== trimmedStory;
+    
     setIsSaving(true);
     try {
-      await onStoryUpdate(localStory.trim());
+      await onStoryUpdate(trimmedStory);
       setIsEditing(false);
+      
+      // Show success toast based on action
+      if (trimmedStory === '') {
+        enhancedToast.success('Story cleared successfully! 🗑️');
+      } else if (isNewStory) {
+        enhancedToast.success('Story added successfully! 📋✨');
+      } else if (isUpdating) {
+        enhancedToast.success('Story updated successfully! ✏️💫');
+      }
     } catch (error) {
       console.error('Error updating story:', error);
+      enhancedToast.error('Failed to save story. Please try again.');
       // Revert to original value on error
       setLocalStory(storyName || '');
     } finally {
@@ -32,8 +71,14 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
   };
 
   const handleCancel = () => {
+    const hadChanges = localStory.trim() !== (storyName || '').trim();
     setLocalStory(storyName || '');
     setIsEditing(false);
+    
+    // Show feedback if user had unsaved changes
+    if (hadChanges) {
+      enhancedToast.info('Changes cancelled 🚫');
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -98,6 +143,7 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
         <div className="w-full space-y-4">
           <div className="relative">
             <textarea
+              ref={textareaRef}
               value={localStory}
               onChange={(e) => setLocalStory(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -137,9 +183,6 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
               <span className="text-lg">❌</span>
               <span>Cancel</span>
             </button>
-          </div>
-          <div className="text-xs sm:text-sm text-gray-500 bg-blue-50 px-3 py-2 rounded-lg border border-blue-200">
-            <span className="font-medium text-blue-700">💡 Tip:</span> Press <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs font-mono">Enter</kbd> to save, <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs font-mono">Escape</kbd> to cancel
           </div>
         </div>
       ) : (
