@@ -7,7 +7,7 @@ import { FIBONACCI_SEQUENCE } from '../../utils/constants';
  */
 const VotingCards = ({ vote, revealed, onVote, onSkip, onUnskip }) => {
   return (
-    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 backdrop-blur-sm rounded-xl shadow-lg p-4 sm:p-5 lg:p-6 flex-1 flex flex-col border border-indigo-100">
+    <div className="bg-blue-50 rounded-xl shadow-md p-4 sm:p-5 lg:p-6 flex-1 flex flex-col border border-blue-200">
       <div className="flex justify-between items-center mb-4 sm:mb-6 lg:mb-7">
         <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800">
           Cast Your Vote
@@ -38,8 +38,8 @@ const VotingCards = ({ vote, revealed, onVote, onSkip, onUnskip }) => {
                   <div 
                     className={`absolute inset-0 rounded-lg sm:rounded-xl ${
                       vote === value 
-                        ? 'bg-gradient-to-br from-indigo-500 to-purple-600 shadow-xl border-2 border-white/50'
-                        : 'bg-white shadow-md hover:shadow-lg border border-indigo-100 group-hover:border-indigo-200'
+                        ? 'bg-blue-600 shadow-md border-2 border-blue-800'
+                        : 'bg-white shadow-sm hover:shadow-md border border-blue-200 hover:border-blue-300'
                     }`}
                   />
                   
@@ -71,7 +71,7 @@ const VotingCards = ({ vote, revealed, onVote, onSkip, onUnskip }) => {
             {vote === 'SKIP' ? (
               <button
                 onClick={onUnskip}
-                className="px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-green-200 to-emerald-200 hover:from-green-300 hover:to-emerald-300 text-green-700 rounded-full font-medium text-sm sm:text-base flex items-center gap-2 shadow-sm hover:shadow-md border border-green-300"
+                className="px-4 py-2 sm:px-6 sm:py-3 bg-green-200 hover:bg-green-300 text-green-700 rounded-lg font-medium text-sm sm:text-base flex items-center gap-2 shadow-sm border border-green-300"
               >
                 <span>↩️</span>
                 Unskip & Vote
@@ -79,7 +79,7 @@ const VotingCards = ({ vote, revealed, onVote, onSkip, onUnskip }) => {
             ) : !vote && (
               <button
                 onClick={onSkip}
-                className="px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-gray-200 to-slate-200 hover:from-gray-300 hover:to-slate-300 text-gray-700 rounded-full font-medium text-sm sm:text-base shadow-sm hover:shadow-md border border-gray-300"
+                className="px-4 py-2 sm:px-6 sm:py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium text-sm sm:text-base shadow-sm border border-gray-300"
               >
                 Skip This Round
               </button>

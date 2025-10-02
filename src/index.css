@@ -44,13 +44,11 @@
 }
 
 .animate-modalSlideIn {
-  animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: fadeIn 0.2s ease-out;
 }
 
-/* Enhanced modal backdrop blur for better visibility */
+/* Simple modal backdrop for VDI performance */
 .modal-backdrop-blur {
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.5);
 }
 

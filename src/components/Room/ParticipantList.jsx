@@ -265,7 +265,7 @@ const ParticipantList = ({
 
   return (
     <div className={`w-full flex flex-col h-full min-h-[400px] ${styles.participantContainer}`}>
-      <div className="bg-gradient-to-br from-indigo-50 to-purple-50 backdrop-blur-sm rounded-xl shadow-lg p-2 sm:p-3 lg:p-4 xl:p-5 2xl:p-6 flex-1 flex flex-col min-w-0 border border-indigo-100 h-full min-h-[400px]">
+      <div className="bg-blue-50 rounded-lg shadow-md p-2 sm:p-3 lg:p-4 xl:p-5 2xl:p-6 flex-1 flex flex-col min-w-0 border border-blue-200 h-full min-h-[400px]">
         <div className="mb-3 sm:mb-4 flex-shrink-0">
           <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-800 text-center mb-2">
             Participants
@@ -413,7 +413,7 @@ const ParticipantList = ({
               // Loading skeleton
               <div className="space-y-2">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-white/50 backdrop-blur-sm p-2.5 sm:p-3 rounded-xl shadow-sm border border-gray-200 animate-pulse">
+                  <div key={i} className="bg-gray-100 p-2.5 sm:p-3 rounded-lg shadow-sm border border-gray-200">
                     <div className="flex items-center gap-2.5 sm:gap-3">
                       <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gray-300"></div>
                       <div className="flex-1">
@@ -443,7 +443,7 @@ const ParticipantList = ({
               finalFilteredParticipants.map((participant, index) => (
               <div
                 key={participant.id}
-                className={`group bg-white/95 backdrop-blur-sm p-2.5 sm:p-3 rounded-xl shadow-sm border will-change-transform ${styles.participantCard}
+                className={`group bg-white p-2.5 sm:p-3 rounded-lg shadow-sm border ${styles.participantCard}
                   ${participant.isCurrentUser 
                     ? 'border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-50/50 to-transparent' 
                     : 'border-gray-200'

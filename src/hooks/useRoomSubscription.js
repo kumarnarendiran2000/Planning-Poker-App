@@ -115,8 +115,13 @@ export const useRoomSubscription = (roomId, state, navigation) => {
           }
         }
         
-        // Deep comparison to avoid unnecessary re-renders
-        if (JSON.stringify(prevParticipants) === JSON.stringify(newParticipants)) {
+        // Shallow comparison - more efficient for VDI environments
+        const prevKeys = Object.keys(prevParticipants).sort();
+        const newKeys = Object.keys(newParticipants).sort();
+        if (prevKeys.length === newKeys.length && 
+            prevKeys.every((key, i) => key === newKeys[i] && 
+                          prevParticipants[key]?.vote === newParticipants[key]?.vote &&
+                          prevParticipants[key]?.name === newParticipants[key]?.name)) {
           return prevParticipants;
         }
         

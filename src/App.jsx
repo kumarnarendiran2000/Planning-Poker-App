@@ -78,7 +78,7 @@ function Home() {
                 <div className="flex flex-wrap justify-center gap-3 mb-6">
                   <button
                     onClick={() => setShowAboutModal(true)}
-                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white text-sm font-medium rounded-full shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm"
                   >
                     <span className="mr-2">ℹ️</span>
                     Learn about Planning Poker
@@ -137,7 +137,7 @@ function FeedbackAnalyticsPage() {
         
         {/* Footer Info */}
         <div className="mt-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-sm text-gray-600 shadow-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-lg text-sm text-gray-600 shadow-sm border border-gray-200">
             <span>🔄</span>
             <span>Data updates in real-time • Last updated: {new Date().toLocaleString()}</span>
           </div>

@@ -75,7 +75,7 @@ function NameModal({ isOpen, onSubmit, onClose }) {
               error 
                 ? 'border-red-400 focus:border-red-500 focus:ring-red-200' 
                 : 'border-blue-200 focus:border-blue-500 focus:ring-blue-200'
-            } rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 bg-gradient-to-r from-white to-gray-50 text-gray-800 placeholder-gray-400 font-medium`}
+            } rounded-lg focus:outline-none focus:ring-2 bg-white text-gray-800 placeholder-gray-400 font-medium`}
             placeholder="e.g., John Doe"
             value={name}
             onChange={handleNameChange}
@@ -83,7 +83,7 @@ function NameModal({ isOpen, onSubmit, onClose }) {
             autoFocus
           />
           {error && (
-            <div className="mt-3 p-3 bg-red-50 border-l-4 border-red-400 rounded-r-lg animate-bounce">
+            <div className="mt-3 p-3 bg-red-50 border-l-4 border-red-400 rounded-r-lg">
               <p className="text-sm text-red-700 font-medium flex items-center">
                 <span className="mr-2">⚠️</span>
                 {error}
@@ -92,7 +92,7 @@ function NameModal({ isOpen, onSubmit, onClose }) {
           )}
         </div>
 
-        <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-blue-700 text-sm font-medium flex items-center">
             <span className="mr-2">💡</span>
             Tip: Use your real name so team members can easily identify you!
