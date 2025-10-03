@@ -288,10 +288,10 @@ const ParticipantList = ({
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium rounded-full border transition-colors ${
+                className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium rounded-full border ${
                   activeFilter === filter
                     ? 'bg-indigo-500 text-white border-indigo-500'
-                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                    : 'bg-white text-gray-600 border-gray-200'
                 }`}
               >
                 {filter === 'all' ? 'All' : 
@@ -316,12 +316,12 @@ const ParticipantList = ({
               <button
                 onClick={() => setActiveVoteFilter('all-votes')}
                 disabled={shouldDisableVoteFilters()}
-                className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-lg border-2 transition-all transform hover:scale-105 ${
+                className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-lg border-2 ${
                   shouldDisableVoteFilters() 
                     ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                     : activeVoteFilter === 'all-votes'
-                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white border-purple-400 shadow-lg shadow-purple-200'
-                    : 'bg-gradient-to-r from-white to-purple-50 text-purple-700 border-purple-200 hover:from-purple-50 hover:to-purple-100 hover:border-purple-300 shadow-sm'
+                    ? 'bg-purple-500 text-white border-purple-400'
+                    : 'bg-white text-purple-700 border-purple-200'
                 }`}
               >
                 <span className="flex items-center gap-1">
@@ -338,12 +338,12 @@ const ParticipantList = ({
                   key={vote}
                   onClick={() => setActiveVoteFilter(vote)}
                   disabled={shouldDisableVoteFilters()}
-                  className={`relative px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-lg border-2 transition-all transform hover:scale-105 ${
+                  className={`relative px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-lg border-2 ${
                     shouldDisableVoteFilters()
                       ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                       : activeVoteFilter === vote
-                      ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white border-purple-400 shadow-lg shadow-purple-200'
-                      : 'bg-gradient-to-r from-white to-purple-50 text-purple-700 border-purple-200 hover:from-purple-50 hover:to-purple-100 hover:border-purple-300 shadow-sm'
+                      ? 'bg-purple-500 text-white border-purple-400'
+                      : 'bg-white text-purple-700 border-purple-200'
                   }`}
                 >
                   <span className="flex items-center gap-1">
@@ -361,12 +361,12 @@ const ParticipantList = ({
                   <button
                     onClick={() => setActiveVoteFilter('highest')}
                     disabled={shouldDisableVoteFilters()}
-                    className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-lg border-2 transition-all transform hover:scale-105 ${
+                    className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-lg border-2 ${
                       shouldDisableVoteFilters()
                         ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                         : activeVoteFilter === 'highest'
-                        ? 'bg-gradient-to-r from-green-500 to-green-600 text-white border-green-400 shadow-lg shadow-green-200'
-                        : 'bg-gradient-to-r from-white to-green-50 text-green-700 border-green-200 hover:from-green-50 hover:to-green-100 hover:border-green-300 shadow-sm'
+                        ? 'bg-green-500 text-white border-green-400'
+                        : 'bg-white text-green-700 border-green-200'
                     }`}
                   >
                     <span className="flex items-center gap-1">
@@ -379,12 +379,12 @@ const ParticipantList = ({
                   <button
                     onClick={() => setActiveVoteFilter('lowest')}
                     disabled={shouldDisableVoteFilters()}
-                    className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-lg border-2 transition-all transform hover:scale-105 ${
+                    className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-lg border-2 ${
                       shouldDisableVoteFilters()
                         ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                         : activeVoteFilter === 'lowest'
-                        ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white border-orange-400 shadow-lg shadow-orange-200'
-                        : 'bg-gradient-to-r from-white to-orange-50 text-orange-700 border-orange-200 hover:from-orange-50 hover:to-orange-100 hover:border-orange-300 shadow-sm'
+                        ? 'bg-orange-500 text-white border-orange-400'
+                        : 'bg-white text-orange-700 border-orange-200'
                     }`}
                   >
                     <span className="flex items-center gap-1">
