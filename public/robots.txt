@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://planning-poker.in/sitemap.xml
+
+# Crawl-delay for better server performance
+Crawl-delay: 1
