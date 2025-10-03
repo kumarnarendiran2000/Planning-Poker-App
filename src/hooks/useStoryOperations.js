@@ -20,12 +20,7 @@ export const useStoryOperations = (roomId, isHost) => {
 
     try {
       await RoomService.updateStory(roomId, storyName);
-      
-      if (storyName.trim()) {
-        enhancedToast.success('Story updated successfully');
-      } else {
-        enhancedToast.info('Story cleared');
-      }
+      // Let the component handle success toasts for better UX control
     } catch (error) {
       console.error('Error updating story:', error);
       enhancedToast.error('Failed to update story: ' + error.message);

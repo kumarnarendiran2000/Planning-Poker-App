@@ -18,33 +18,17 @@
   animation: fade-in 0.5s ease-out;
 }
 
-/* Enhanced Modal Animations */
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes modalSlideIn {
-  0% {
-    opacity: 0;
-    transform: translateY(-30px) scale(0.9);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
+/* VDI-Optimized Modal - No Animations for Better Performance */
+/* Animations disabled for VDI environments to prevent lag */
 
 .animate-fadeIn {
-  animation: fadeIn 0.3s ease-out;
+  /* Animation disabled for VDI performance */
+  opacity: 1;
 }
 
 .animate-modalSlideIn {
-  animation: fadeIn 0.2s ease-out;
+  /* Animation disabled for VDI performance */
+  opacity: 1;
 }
 
 /* Simple modal backdrop for VDI performance */

@@ -31,42 +31,37 @@ const Modal = ({
 
   if (!isOpen) return null;
 
-  // Enhanced modal styles with colorful borders and gradients
+  // VDI-optimized modal styles - simple and fast
   const modalStyles = {
     default: {
       border: 'border-l-4 border-indigo-500',
-      headerBg: 'bg-gradient-to-r from-indigo-50 to-purple-50',
-      headerBorder: 'border-b border-indigo-100',
-      textColor: 'text-indigo-900',
-      shadow: 'shadow-indigo-100'
+      headerBg: 'bg-indigo-50',
+      headerBorder: 'border-b border-indigo-200',
+      textColor: 'text-indigo-900'
     },
     confirm: {
       border: 'border-l-4 border-blue-500',
-      headerBg: 'bg-gradient-to-r from-blue-50 to-cyan-50',
-      headerBorder: 'border-b border-blue-100',
-      textColor: 'text-blue-900',
-      shadow: 'shadow-blue-100'
+      headerBg: 'bg-blue-50',
+      headerBorder: 'border-b border-blue-200',
+      textColor: 'text-blue-900'
     },
     error: {
       border: 'border-l-4 border-red-500',
-      headerBg: 'bg-gradient-to-r from-red-50 to-pink-50',
-      headerBorder: 'border-b border-red-100',
-      textColor: 'text-red-900',
-      shadow: 'shadow-red-100'
+      headerBg: 'bg-red-50',
+      headerBorder: 'border-b border-red-200',
+      textColor: 'text-red-900'
     },
     warning: {
       border: 'border-l-4 border-amber-500',
-      headerBg: 'bg-gradient-to-r from-amber-50 to-orange-50',
-      headerBorder: 'border-b border-amber-100',
-      textColor: 'text-amber-900',
-      shadow: 'shadow-amber-100'
+      headerBg: 'bg-amber-50',
+      headerBorder: 'border-b border-amber-200',
+      textColor: 'text-amber-900'
     },
     success: {
       border: 'border-l-4 border-green-500',
-      headerBg: 'bg-gradient-to-r from-green-50 to-emerald-50',
-      headerBorder: 'border-b border-green-100',
-      textColor: 'text-green-900',
-      shadow: 'shadow-green-100'
+      headerBg: 'bg-green-50',
+      headerBorder: 'border-b border-green-200',
+      textColor: 'text-green-900'
     }
   };
 
@@ -79,39 +74,39 @@ const Modal = ({
     default: <span className="text-2xl text-indigo-500 mr-3">💬</span>
   };
 
-  // Enhanced button styles with gradients (removed hover effects)
+  // VDI-optimized button styles - simple and fast
   const okButtonStyles = {
-    default: 'bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg',
-    confirm: 'bg-gradient-to-r from-blue-600 to-cyan-600 shadow-lg',
-    error: 'bg-gradient-to-r from-red-600 to-pink-600 shadow-lg',
-    warning: 'bg-gradient-to-r from-amber-600 to-orange-600 shadow-lg',
-    success: 'bg-gradient-to-r from-green-600 to-emerald-600 shadow-lg',
+    default: 'bg-indigo-600',
+    confirm: 'bg-blue-600',
+    error: 'bg-red-600',
+    warning: 'bg-amber-600',
+    success: 'bg-green-600',
   };
 
   const currentStyle = modalStyles[type];
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-      {/* Enhanced backdrop with complete coverage */}
+      {/* VDI-optimized backdrop - simple and fast */}
       <div 
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fadeIn z-[9998]" 
+        className="fixed inset-0 bg-black/60 z-[9998]" 
         onClick={onClose}
       ></div>
       
-      {/* Enhanced modal with colorful borders and animations */}
+      {/* VDI-optimized modal - no animations or complex effects */}
       <div className={`
-        relative z-[10000] bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden 
-        animate-modalSlideIn max-h-[90vh] overflow-y-auto
-        ${currentStyle.border} ${currentStyle.shadow}
+        relative z-[10000] bg-white rounded-xl border-2 w-full max-w-md overflow-hidden 
+        max-h-[90vh] overflow-y-auto
+        ${currentStyle.border}
         ${className}
       `}>
         {/* Top-right close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors z-10 group"
+          className="absolute top-4 right-4 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-700 z-10"
           aria-label="Close modal"
         >
-          <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>

@@ -44,21 +44,32 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
     if (!isHost || !onStoryUpdate) return;
     
     const trimmedStory = localStory.trim();
-    const isNewStory = !storyName || storyName.trim() === '';
-    const isUpdating = storyName && storyName.trim() !== '' && storyName !== trimmedStory;
+    const originalStory = (storyName || '').trim();
+    
+    // Determine the action type (only one condition should be true)
+    const isClearingStory = trimmedStory === '' && originalStory !== '';
+    const isAddingNewStory = originalStory === '' && trimmedStory !== '';
+    const isUpdatingStory = originalStory !== '' && trimmedStory !== '' && originalStory !== trimmedStory;
+    const isNoChange = originalStory === trimmedStory;
+    
+    // Skip update if no changes
+    if (isNoChange) {
+      setIsEditing(false);
+      return;
+    }
     
     setIsSaving(true);
     try {
       await onStoryUpdate(trimmedStory);
       setIsEditing(false);
       
-      // Show success toast based on action
-      if (trimmedStory === '') {
-        enhancedToast.success('Story cleared successfully! 🗑️');
-      } else if (isNewStory) {
-        enhancedToast.success('Story added successfully! 📋✨');
-      } else if (isUpdating) {
-        enhancedToast.success('Story updated successfully! ✏️💫');
+      // Show single appropriate toast with minimal animation for VDI optimization
+      if (isClearingStory) {
+        enhancedToast.success('Story cleared 🗑️');
+      } else if (isAddingNewStory) {
+        enhancedToast.success('Story added 📋');
+      } else if (isUpdatingStory) {
+        enhancedToast.success('Story updated ✏️');
       }
     } catch (error) {
       console.error('Error updating story:', error);
@@ -95,19 +106,19 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
     return (
       <div className="w-full">
         <div className="mb-3 sm:mb-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full text-xs sm:text-sm font-semibold shadow-md">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded-full text-xs sm:text-sm font-semibold">
             <span className="text-lg">📖</span>
             <span>Current Story</span>
           </div>
         </div>
         {storyName ? (
-          <div className="w-full p-4 sm:p-5 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl sm:rounded-2xl text-sm sm:text-base text-gray-800 min-h-[60px] sm:min-h-[70px] flex items-center shadow-sm hover:shadow-md transition-shadow duration-200">
+          <div className="w-full p-4 sm:p-5 bg-indigo-50 border-2 border-indigo-200 rounded-xl text-sm sm:text-base text-gray-800 min-h-[60px] sm:min-h-[70px] flex items-center">
             <div className="w-full break-words whitespace-pre-wrap font-medium leading-relaxed">
               <span className="text-indigo-600">📋</span> {storyName}
             </div>
           </div>
         ) : (
-          <div className="w-full p-4 sm:p-5 bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-dashed border-gray-300 rounded-xl sm:rounded-2xl text-sm sm:text-base text-gray-500 min-h-[60px] sm:min-h-[70px] flex items-center justify-center italic hover:border-gray-400 transition-colors duration-200">
+          <div className="w-full p-4 sm:p-5 bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl text-sm sm:text-base text-gray-500 min-h-[60px] sm:min-h-[70px] flex items-center justify-center italic">
             <span className="flex items-center gap-2">
               <span className="text-lg opacity-50">📝</span>
               <span>No story specified</span>
@@ -122,7 +133,7 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
   return (
     <div className="w-full">
       <div className="mb-3 sm:mb-4 flex items-center justify-between">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full text-xs sm:text-sm font-semibold shadow-md">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded-full text-xs sm:text-sm font-semibold">
           <span className="text-lg">📖</span>
           <span>Story / User Story</span>
         </div>
@@ -130,7 +141,7 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
           <button
             onClick={() => setIsEditing(true)}
             disabled={disabled}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs sm:text-sm font-medium rounded-full hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white text-xs sm:text-sm font-medium rounded-full hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-100"
           >
             <span>✏️</span>
             <span className="hidden sm:inline">Edit Story</span>
@@ -149,11 +160,11 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
               onKeyDown={handleKeyDown}
               placeholder="📝 Enter story name, number, or description (e.g., 'STORY-123: User login feature')"
               disabled={disabled || isSaving}
-              className="w-full p-4 sm:p-5 border-2 border-indigo-300 rounded-xl sm:rounded-2xl resize-none text-sm sm:text-base focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all min-h-[80px] sm:min-h-[90px] md:min-h-[100px] bg-gradient-to-br from-white to-indigo-50 shadow-sm"
+              className="w-full p-4 sm:p-5 border-2 border-indigo-300 rounded-xl resize-none text-sm sm:text-base focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px] sm:min-h-[90px] md:min-h-[100px] bg-white"
               rows={3}
               autoFocus
             />
-            <div className="absolute bottom-2 right-2 text-xs text-gray-400 bg-white px-2 py-1 rounded-md shadow-sm">
+            <div className="absolute bottom-2 right-2 text-xs text-gray-400 bg-white px-2 py-1 rounded-md border border-gray-200">
               {localStory.length}/500
             </div>
           </div>
@@ -161,7 +172,7 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
             <button
               onClick={handleSave}
               disabled={disabled || isSaving}
-              className="flex-1 sm:flex-none px-4 py-2.5 sm:px-6 sm:py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm sm:text-base font-semibold rounded-xl hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105"
+              className="flex-1 sm:flex-none px-4 py-2.5 sm:px-6 sm:py-3 bg-emerald-500 text-white text-sm sm:text-base font-semibold rounded-xl hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-100 flex items-center justify-center gap-2"
             >
               {isSaving ? (
                 <>
@@ -178,7 +189,7 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
             <button
               onClick={handleCancel}
               disabled={disabled || isSaving}
-              className="flex-1 sm:flex-none px-4 py-2.5 sm:px-6 sm:py-3 bg-gradient-to-r from-gray-400 to-gray-500 text-white text-sm sm:text-base font-semibold rounded-xl hover:from-gray-500 hover:to-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+              className="flex-1 sm:flex-none px-4 py-2.5 sm:px-6 sm:py-3 bg-gray-500 text-white text-sm sm:text-base font-semibold rounded-xl hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-100 flex items-center justify-center gap-2"
             >
               <span className="text-lg">❌</span>
               <span>Cancel</span>
@@ -187,19 +198,19 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
         </div>
       ) : (
         <div 
-          className="w-full p-4 sm:p-5 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl sm:rounded-2xl cursor-pointer hover:border-indigo-400 hover:shadow-lg transition-all duration-200 min-h-[60px] sm:min-h-[70px] flex items-center group transform hover:scale-[1.02]"
+          className="w-full p-4 sm:p-5 bg-indigo-50 border-2 border-indigo-200 rounded-xl cursor-pointer hover:border-indigo-400 min-h-[60px] sm:min-h-[70px] flex items-center"
           onClick={() => !disabled && setIsEditing(true)}
         >
           {storyName ? (
             <div className="w-full text-sm sm:text-base text-gray-800 break-words whitespace-pre-wrap font-medium leading-relaxed">
               <span className="text-indigo-600 mr-2">📋</span>{storyName}
-              <span className="ml-2 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200">✏️</span>
+              <span className="ml-2 text-indigo-400">✏️</span>
             </div>
           ) : (
-            <div className="w-full text-sm sm:text-base text-gray-500 italic flex items-center justify-center gap-2 group-hover:text-indigo-600 transition-colors duration-200">
-              <span className="text-xl opacity-50 group-hover:opacity-100">📝</span>
+            <div className="w-full text-sm sm:text-base text-gray-500 italic flex items-center justify-center gap-2">
+              <span className="text-xl opacity-50">📝</span>
               <span>Click to add story name or number...</span>
-              <span className="text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200">✨</span>
+              <span className="text-indigo-400">✨</span>
             </div>
           )}
         </div>
