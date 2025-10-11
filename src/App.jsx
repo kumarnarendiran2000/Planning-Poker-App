@@ -74,6 +74,19 @@ function Home() {
               <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
                 <h1 className="text-3xl font-bold text-center mb-4 text-gray-800">Planning Poker</h1>
                 
+                <div className="text-center mb-6">
+                  <p className="text-sm text-gray-600 mb-4">
+                    Free online planning poker for agile teams. Create estimation rooms instantly, 
+                    no signup required. Perfect for remote scrum planning.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 mb-4">
+                    <div>✅ Instant room creation</div>
+                    <div>✅ Real-time collaboration</div>
+                    <div>✅ No account needed</div>
+                    <div>✅ Mobile-friendly design</div>
+                  </div>
+                </div>
+                
                 {/* Action buttons */}
                 <div className="flex flex-wrap justify-center gap-3 mb-6">
                   <button
@@ -101,6 +114,8 @@ function Home() {
                   </div>
                 </div>
                 <JoinRoom />
+                
+
               </div>
             </div>
           </div>

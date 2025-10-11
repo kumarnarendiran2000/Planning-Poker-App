@@ -72,33 +72,41 @@ const JoinRoom = () => {
           </div>
         )}
         <form onSubmit={handleJoin} className="space-y-4">
-          <input
-            type="text"
-            placeholder="YOUR NAME"
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-              setError(clearErrorOnInput(e.target.value, error));
-            }}
-            required
-            className={`w-full p-2 border ${error && !name.trim() ? 'border-red-500' : 'border-gray-300'} 
-                rounded-lg focus:ring-2 ${error && !name.trim() ? 'focus:ring-red-500' : 'focus:ring-blue-500'} 
-                focus:border-blue-500 outline-none`}
-          />
-          <input
-            type="text"
-            placeholder="ROOM CODE"
-            value={roomCode}
-            onChange={(e) => {
-              setRoomCode(e.target.value.toUpperCase());
-              setError(clearErrorOnInput(e.target.value, error));
-            }}
-            maxLength={6}
-            required
-            className={`w-full p-2 border ${error && !roomCode.trim() ? 'border-red-500' : 'border-gray-300'} 
-                rounded-lg focus:ring-2 ${error && !roomCode.trim() ? 'focus:ring-red-500' : 'focus:ring-blue-500'} 
-                focus:border-blue-500 outline-none uppercase`}
-          />
+          <div>
+            <label htmlFor="join-name" className="sr-only">Your Name</label>
+            <input
+              id="join-name"
+              type="text"
+              placeholder="YOUR NAME"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                setError(clearErrorOnInput(e.target.value, error));
+              }}
+              required
+              className={`w-full p-2 border ${error && !name.trim() ? 'border-red-500' : 'border-gray-300'} 
+                  rounded-lg focus:ring-2 ${error && !name.trim() ? 'focus:ring-red-500' : 'focus:ring-blue-500'} 
+                  focus:border-blue-500 outline-none`}
+            />
+          </div>
+          <div>
+            <label htmlFor="join-room-code" className="sr-only">Room Code</label>
+            <input
+              id="join-room-code"
+              type="text"
+              placeholder="ROOM CODE"
+              value={roomCode}
+              onChange={(e) => {
+                setRoomCode(e.target.value.toUpperCase());
+                setError(clearErrorOnInput(e.target.value, error));
+              }}
+              maxLength={6}
+              required
+              className={`w-full p-2 border ${error && !roomCode.trim() ? 'border-red-500' : 'border-gray-300'} 
+                  rounded-lg focus:ring-2 ${error && !roomCode.trim() ? 'focus:ring-red-500' : 'focus:ring-blue-500'} 
+                  focus:border-blue-500 outline-none uppercase`}
+            />
+          </div>
           <button 
             type="submit" 
             disabled={joining}

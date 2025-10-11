@@ -30,10 +30,10 @@ const AboutModal = ({ isOpen, onClose }) => {
             <span className="text-2xl text-white font-bold">🎯</span>
           </div>
           <h3 className="text-xl font-semibold text-gray-800 mb-2">
-            Sprint Planning Made Simple
+            Free Planning Poker for Agile Teams
           </h3>
           <p className="text-gray-600 text-sm sm:text-base">
-            This Planning Poker tool is designed specifically for <strong>Agile teams</strong> during sprint planning sessions to estimate story points collaboratively and efficiently.
+            This free planning poker app is designed for <strong>agile teams</strong> and <strong>scrum masters</strong> to estimate story points during sprint planning sessions. Perfect for remote teams who need collaborative estimation without any signup required.
           </p>
         </div>
 
@@ -44,7 +44,7 @@ const AboutModal = ({ isOpen, onClose }) => {
             Fibonacci Sequence Estimation
           </h4>
           <p className="text-gray-700 mb-3 text-sm sm:text-base">
-            Uses the proven <strong className="text-blue-600">Fibonacci series</strong> for story point estimation:
+            Our free planning poker tool uses the proven <strong className="text-blue-600">Fibonacci series</strong> for accurate agile story point estimation:
           </p>
           <div className="flex flex-wrap gap-2 justify-center">
             {['1', '2', '3', '5', '8', '13', '21', '?'].map((card) => (
@@ -57,7 +57,7 @@ const AboutModal = ({ isOpen, onClose }) => {
             ))}
           </div>
           <p className="text-gray-600 text-xs sm:text-sm mt-3">
-            The Fibonacci sequence naturally reflects the uncertainty in larger estimates, making it perfect for agile planning.
+            The Fibonacci sequence naturally reflects uncertainty in larger estimates, making it the preferred choice for agile planning poker and scrum estimation sessions.
           </p>
         </div>
 
