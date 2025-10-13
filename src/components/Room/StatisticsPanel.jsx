@@ -47,6 +47,51 @@ const StatisticsPanel = ({ stats, revealed, vote, votesSubmitted, totalParticipa
 
   const { totalEligible, actualVoted, skipped, notVoted, votesWithSkipped } = getParticipantCounts();
 
+  // Get recommended Fibonacci story points based on average
+  const getFibonacciRecommendation = (average) => {
+    if (!average || average === null || average === undefined) return null;
+    
+    const fibSequence = [0, 0.5, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
+    
+    // Find the two Fibonacci numbers that the average falls between
+    let lower = fibSequence[0];
+    let higher = fibSequence[fibSequence.length - 1];
+    
+    for (let i = 0; i < fibSequence.length - 1; i++) {
+      if (average >= fibSequence[i] && average <= fibSequence[i + 1]) {
+        lower = fibSequence[i];
+        higher = fibSequence[i + 1];
+        break;
+      }
+    }
+    
+    // Calculate distances to both surrounding numbers
+    const distToLower = Math.abs(average - lower);
+    const distToHigher = Math.abs(average - higher);
+    
+    // Determine the closest number
+    const closest = distToLower <= distToHigher ? lower : higher;
+    const closestDiff = Math.min(distToLower, distToHigher);
+    
+    // Show alternative only if the average is very close to being equidistant
+    // Use a 10% threshold: if the difference between distances is less than 10% of the gap
+    const totalGap = higher - lower;
+    const diffBetweenDistances = Math.abs(distToLower - distToHigher);
+    const shouldShowAlternative = diffBetweenDistances < (totalGap * 0.1);
+    
+    let alternative = null;
+    if (shouldShowAlternative && lower !== higher) {
+      alternative = closest === lower ? higher : lower;
+    }
+    
+    return {
+      recommended: closest,
+      alternative: alternative,
+      isExactMatch: closestDiff < 0.1,
+      isClose: closestDiff <= 0.5
+    };
+  };
+
   // Calculate metrics based on corrected counts
   const votingProgress = totalEligible > 0 ? (votesWithSkipped / totalEligible) * 100 : 0;
   const isVotingComplete = votesWithSkipped === totalEligible && totalEligible > 0;
@@ -78,7 +123,7 @@ const StatisticsPanel = ({ stats, revealed, vote, votesSubmitted, totalParticipa
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 min-h-[120px]">
         {/* Votes Progress */}
-        <div className="bg-white p-3 sm:p-4 rounded-xl border border-indigo-100 col-span-2 md:col-span-3 lg:col-span-2 xl:col-span-2 2xl:col-span-2 min-h-[100px] sm:min-h-[110px] lg:min-h-[120px] flex flex-col justify-center items-center text-center">
+        <div className="bg-white p-2 sm:p-3 rounded-xl border border-indigo-100 col-span-2 md:col-span-3 lg:col-span-2 xl:col-span-2 2xl:col-span-2 min-h-[110px] sm:min-h-[120px] lg:min-h-[130px] flex flex-col justify-center items-center text-center">
           <div className="flex items-center gap-2 mb-2">
             <div className={`w-2 h-2 rounded-full ${isLoading ? 'bg-gray-400' : isVotingComplete ? 'bg-green-500' : 'bg-indigo-500'}`}></div>
             <h3 className="text-xs sm:text-sm font-medium text-indigo-600">
@@ -153,7 +198,7 @@ const StatisticsPanel = ({ stats, revealed, vote, votesSubmitted, totalParticipa
         </div>
 
         {/* Your Vote */}
-        <div className="bg-white p-3 sm:p-4 rounded-xl border border-purple-100 col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-1 2xl:col-span-1 min-h-[100px] sm:min-h-[110px] lg:min-h-[120px] flex flex-col justify-center items-center text-center">
+        <div className="bg-white p-2 sm:p-3 rounded-xl border border-purple-100 col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-1 2xl:col-span-1 min-h-[110px] sm:min-h-[120px] lg:min-h-[130px] flex flex-col justify-center items-center text-center">
           <div className="flex items-center gap-2 mb-2">
             <div className={`w-2 h-2 rounded-full ${vote ? 'bg-green-500' : 'bg-gray-400'}`}></div>
             <h3 className="text-xs sm:text-sm font-medium text-purple-600">
@@ -173,7 +218,7 @@ const StatisticsPanel = ({ stats, revealed, vote, votesSubmitted, totalParticipa
         </div>
         
         {/* Average Score - Highlighted when revealed */}
-        <div className={`p-3 sm:p-4 rounded-xl col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-1 2xl:col-span-1 min-h-[100px] sm:min-h-[110px] lg:min-h-[120px] flex flex-col justify-center items-center text-center ${
+        <div className={`p-2 sm:p-3 rounded-xl col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-1 2xl:col-span-1 min-h-[110px] sm:min-h-[120px] lg:min-h-[130px] flex flex-col justify-center items-center text-center ${
           revealed 
             ? 'bg-emerald-50 border-2 border-emerald-300' 
             : 'bg-white border border-emerald-100'
@@ -185,7 +230,7 @@ const StatisticsPanel = ({ stats, revealed, vote, votesSubmitted, totalParticipa
             <h3 className={`text-xs sm:text-sm font-medium ${
               revealed ? 'text-emerald-700 font-semibold' : 'text-emerald-600'
             }`}>
-              Average
+              Average {revealed && stats.average !== null ? '& Suggestion' : ''}
             </h3>
           </div>
           <div className={`text-2xl sm:text-3xl lg:text-4xl font-bold ${
@@ -193,15 +238,45 @@ const StatisticsPanel = ({ stats, revealed, vote, votesSubmitted, totalParticipa
           }`}>
             {revealed && stats.average !== null ? stats.average : '?'}
           </div>
+          
+          {/* Fibonacci Recommendation */}
+          {revealed && stats.average !== null && (() => {
+            const fibRec = getFibonacciRecommendation(stats.average);
+            if (!fibRec) return null;
+            
+            return (
+              <div className="mt-1 w-full">
+                <div className="flex flex-wrap items-center justify-center gap-1 text-xs">
+                  <span className="text-emerald-600 font-medium whitespace-nowrap">Suggestion:</span>
+                  <div className={`px-1.5 py-0.5 rounded text-xs font-bold border ${
+                    fibRec.isExactMatch 
+                      ? 'bg-emerald-100 border-emerald-300 text-emerald-800' 
+                      : 'bg-blue-100 border-blue-300 text-blue-800'
+                  }`}>
+                    {fibRec.recommended}
+                  </div>
+                  {!fibRec.isExactMatch && fibRec.alternative && (
+                    <>
+                      <span className="text-gray-500">or</span>
+                      <div className="px-1.5 py-0.5 rounded text-xs font-bold border bg-gray-100 border-gray-300 text-gray-700">
+                        {fibRec.alternative}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+          
           <div className={`text-xs mt-1 ${
             revealed ? 'text-emerald-600 font-medium' : 'text-gray-500'
           }`}>
-            {revealed ? 'Points' : 'Hidden'}
+            {revealed ? 'Avg Points' : 'Hidden'}
           </div>
         </div>
 
         {/* Min/Max Range */}
-        <div className="bg-white p-3 sm:p-4 rounded-xl border border-amber-100 col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-1 2xl:col-span-1 min-h-[100px] sm:min-h-[110px] lg:min-h-[120px] flex flex-col justify-center items-center text-center">
+        <div className="bg-white p-2 sm:p-3 rounded-xl border border-amber-100 col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-1 2xl:col-span-1 min-h-[110px] sm:min-h-[120px] lg:min-h-[130px] flex flex-col justify-center items-center text-center">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-sm">📈</span>
             <h3 className="text-xs sm:text-sm font-medium text-amber-600">
@@ -224,7 +299,7 @@ const StatisticsPanel = ({ stats, revealed, vote, votesSubmitted, totalParticipa
 
         {/* Consensus Level */}
         {revealed && stats.consensus !== undefined && (
-          <div className="bg-white p-3 sm:p-4 rounded-xl border border-teal-100 col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-1 2xl:col-span-1 min-h-[100px] sm:min-h-[110px] lg:min-h-[120px] flex flex-col justify-center items-center text-center">
+          <div className="bg-white p-2 sm:p-3 rounded-xl border border-teal-100 col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-1 2xl:col-span-1 min-h-[110px] sm:min-h-[120px] lg:min-h-[130px] flex flex-col justify-center items-center text-center">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-sm">🎯</span>
               <h3 className="text-xs sm:text-sm font-medium text-teal-600">
@@ -241,7 +316,7 @@ const StatisticsPanel = ({ stats, revealed, vote, votesSubmitted, totalParticipa
         )}
 
         {/* Session Status */}
-        <div className={`p-3 sm:p-4 rounded-xl border col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-1 2xl:col-span-1 min-h-[100px] sm:min-h-[110px] lg:min-h-[120px] flex flex-col justify-center items-center text-center ${
+        <div className={`p-2 sm:p-3 rounded-xl border col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-1 2xl:col-span-1 min-h-[110px] sm:min-h-[120px] lg:min-h-[130px] flex flex-col justify-center items-center text-center ${
           revealed || isVotingComplete 
             ? 'bg-green-100 border-green-300' 
             : 'bg-red-100 border-red-300'
