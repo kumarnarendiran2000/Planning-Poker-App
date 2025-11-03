@@ -9,15 +9,16 @@ const AboutModal = ({ isOpen, onClose }) => {
       title=""
       showOk={false}
       showCancel={false}
-      className="max-w-4xl max-h-[90vh] overflow-y-auto"
+      size="xl"
+      className=""
     >
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-6">
         {/* Back/Close Button */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pb-4 border-b border-gray-100">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-800">About Planning Poker</h2>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pb-4 border-b border-gray-200">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">About Planning Poker</h2>
           <button
             onClick={onClose}
-            className="flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white font-bold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 text-sm sm:text-base"
+            className="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
           >
             <span className="mr-2">←</span>
             <span>Back to Home</span>
@@ -25,119 +26,225 @@ const AboutModal = ({ isOpen, onClose }) => {
         </div>
 
         {/* Main Description */}
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-green-500 rounded-full mb-4">
-            <span className="text-2xl text-white font-bold">🎯</span>
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-r from-blue-500 to-green-500 rounded-xl flex items-center justify-center">
+              <span className="text-3xl">🎯</span>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                What is Planning Poker?
+              </h3>
+              <p className="text-gray-700 leading-relaxed">
+                Planning Poker is a <strong>consensus-based estimation technique</strong> used by agile teams to estimate the effort or complexity of user stories during sprint planning. 
+                It's designed to avoid <strong>anchoring bias</strong> by having all team members vote simultaneously using the Fibonacci sequence.
+              </p>
+            </div>
           </div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">
-            Free Planning Poker for Agile Teams
-          </h3>
-          <p className="text-gray-600 text-sm sm:text-base">
-            This free planning poker app is designed for <strong>agile teams</strong> and <strong>scrum masters</strong> to estimate story points during sprint planning sessions. Perfect for remote teams who need collaborative estimation without any signup required.
-          </p>
         </div>
 
-        {/* Fibonacci Series Highlight */}
-        <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-4 sm:p-6 border-l-4 border-gradient-to-b border-blue-500">
-          <h4 className="font-semibold text-gray-800 mb-3 flex items-center text-sm sm:text-base">
-            <span className="text-blue-600 mr-2">🔢</span>
-            Fibonacci Sequence Estimation
+        {/* Two Column Layout for Web */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column */}
+          <div className="space-y-6">
+            {/* Fibonacci Series */}
+            <div className="bg-white rounded-xl p-6 border-2 border-blue-200 shadow-sm">
+              <h4 className="font-bold text-gray-800 mb-3 flex items-center text-lg">
+                <span className="text-blue-600 mr-2 text-xl">🔢</span>
+                Fibonacci Sequence
+              </h4>
+              <p className="text-gray-700 mb-4 text-sm leading-relaxed">
+                Our tool uses the <strong>Fibonacci series</strong> (1, 2, 3, 5, 8, 13, 21, ?) which naturally reflects the <strong>increasing uncertainty</strong> in larger estimates:
+              </p>
+              <div className="flex flex-wrap gap-2 justify-center mb-4">
+                {['1', '2', '3', '5', '8', '13', '21', '?'].map((card) => (
+                  <span 
+                    key={card}
+                    className="px-3 py-2 bg-gradient-to-br from-blue-500 to-purple-600 text-white border-2 border-blue-300 rounded-lg text-sm font-bold shadow-md"
+                  >
+                    {card}
+                  </span>
+                ))}
+              </div>
+              <p className="text-gray-600 text-xs leading-relaxed">
+                💡 The <strong>?</strong> card means "I don't understand" or "I need more information" - a signal to discuss the story further.
+              </p>
+            </div>
+
+            {/* How It Works */}
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+              <h4 className="font-bold text-gray-800 mb-4 text-lg flex items-center">
+                <span className="mr-2 text-xl">🚀</span>
+                How It Works
+              </h4>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-7 h-7 bg-blue-500 text-white rounded-full text-sm flex items-center justify-center font-bold">1</span>
+                  <div>
+                    <p className="text-gray-800 font-semibold text-sm">Create or Join a Room</p>
+                    <p className="text-gray-600 text-xs mt-1">Host creates a room and shares the code. Team members join using the room code.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-7 h-7 bg-blue-500 text-white rounded-full text-sm flex items-center justify-center font-bold">2</span>
+                  <div>
+                    <p className="text-gray-800 font-semibold text-sm">Discuss the User Story</p>
+                    <p className="text-gray-600 text-xs mt-1">Product owner or scrum master presents the user story. Team asks clarifying questions.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-7 h-7 bg-blue-500 text-white rounded-full text-sm flex items-center justify-center font-bold">3</span>
+                  <div>
+                    <p className="text-gray-800 font-semibold text-sm">Vote Simultaneously</p>
+                    <p className="text-gray-600 text-xs mt-1">Each participant selects a Fibonacci card representing their estimate. Votes stay hidden until reveal.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-7 h-7 bg-blue-500 text-white rounded-full text-sm flex items-center justify-center font-bold">4</span>
+                  <div>
+                    <p className="text-gray-800 font-semibold text-sm">Reveal & Discuss</p>
+                    <p className="text-gray-600 text-xs mt-1">Host reveals all votes at once. Team discusses differences, especially highest and lowest estimates.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-7 h-7 bg-blue-500 text-white rounded-full text-sm flex items-center justify-center font-bold">5</span>
+                  <div>
+                    <p className="text-gray-800 font-semibold text-sm">Reach Consensus</p>
+                    <p className="text-gray-600 text-xs mt-1">Team re-votes if needed until consensus is reached. Final estimate is recorded.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            {/* Roles */}
+            <div className="bg-white rounded-xl p-6 border-2 border-purple-200 shadow-sm">
+              <h4 className="font-bold text-gray-800 mb-4 text-lg flex items-center">
+                <span className="text-purple-600 mr-2 text-xl">👥</span>
+                Team Roles
+              </h4>
+              <div className="space-y-3">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">🎯</span>
+                    <h5 className="font-semibold text-green-800 text-sm">Host Participant</h5>
+                  </div>
+                  <p className="text-gray-700 text-xs leading-relaxed">
+                    Creates and manages the room. Can vote, reveal estimates, reset sessions, and manage participants. Perfect for <strong>participating team leads</strong>.
+                  </p>
+                </div>
+                
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">�️</span>
+                    <h5 className="font-semibold text-orange-800 text-sm">Facilitator (Observer)</h5>
+                  </div>
+                  <p className="text-gray-700 text-xs leading-relaxed">
+                    Manages the room but <strong>doesn't vote</strong>. Ideal for <strong>Scrum Masters</strong> or Product Owners who facilitate but don't estimate.
+                  </p>
+                </div>
+                
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">✋</span>
+                    <h5 className="font-semibold text-purple-800 text-sm">Participant</h5>
+                  </div>
+                  <p className="text-gray-700 text-xs leading-relaxed">
+                    Team members who vote on story points. Developers, QA, designers - anyone involved in implementing the story.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Key Features */}
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-200">
+              <h4 className="font-bold text-gray-800 mb-4 text-lg flex items-center">
+                <span className="mr-2 text-xl">✨</span>
+                Key Features
+              </h4>
+              <div className="grid grid-cols-1 gap-3">
+                <div className="flex items-start gap-3">
+                  <span className="text-xl flex-shrink-0">📊</span>
+                  <div>
+                    <h5 className="font-semibold text-gray-800 text-sm">Real-time Statistics</h5>
+                    <p className="text-gray-600 text-xs">Average, median, mode, consensus detection, and vote distribution charts.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <span className="text-xl flex-shrink-0">🔄</span>
+                  <div>
+                    <h5 className="font-semibold text-gray-800 text-sm">Live Collaboration</h5>
+                    <p className="text-gray-600 text-xs">Real-time updates, synchronized voting, instant notifications for all participants.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <span className="text-xl flex-shrink-0">📧</span>
+                  <div>
+                    <h5 className="font-semibold text-gray-800 text-sm">Email Notifications</h5>
+                    <p className="text-gray-600 text-xs">Optional email alerts when participants join/leave or roles change.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <span className="text-xl flex-shrink-0">🎮</span>
+                  <div>
+                    <h5 className="font-semibold text-gray-800 text-sm">Skip Option</h5>
+                    <p className="text-gray-600 text-xs">Participants can skip voting if they lack context or are not involved in the story.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <span className="text-xl flex-shrink-0">🔒</span>
+                  <div>
+                    <h5 className="font-semibold text-gray-800 text-sm">Auto-Cleanup</h5>
+                    <p className="text-gray-600 text-xs">Rooms automatically delete after 4 hours of inactivity. No data stored permanently.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tips for Scrum Masters */}
+        <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl p-6 border-2 border-indigo-300">
+          <h4 className="font-bold text-gray-800 mb-4 text-lg flex items-center">
+            <span className="mr-2 text-xl">💡</span>
+            Tips for Scrum Masters & Team Leads
           </h4>
-          <p className="text-gray-700 mb-3 text-sm sm:text-base">
-            Our free planning poker tool uses the proven <strong className="text-blue-600">Fibonacci series</strong> for accurate agile story point estimation:
-          </p>
-          <div className="flex flex-wrap gap-2 justify-center">
-            {['1', '2', '3', '5', '8', '13', '21', '?'].map((card) => (
-              <span 
-                key={card}
-                className="px-2 py-1 sm:px-3 sm:py-2 bg-white border-2 border-blue-200 rounded-lg text-xs sm:text-sm font-medium text-gray-700 shadow-sm"
-              >
-                {card}
-              </span>
-            ))}
-          </div>
-          <p className="text-gray-600 text-xs sm:text-sm mt-3">
-            The Fibonacci sequence naturally reflects uncertainty in larger estimates, making it the preferred choice for agile planning poker and scrum estimation sessions.
-          </p>
-        </div>
-
-        {/* Key Features */}
-        <div>
-          <h4 className="font-semibold text-gray-800 mb-4 text-center text-sm sm:text-base">✨ Key Features</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
-              <div className="flex items-center mb-2">
-                <span className="text-green-600 mr-2">📊</span>
-                <h5 className="font-medium text-gray-800 text-sm sm:text-base">Real-time Statistics</h5>
-              </div>
-              <p className="text-gray-600 text-xs sm:text-sm">
-                Live voting statistics with average, consensus tracking, and vote distribution analysis.
-              </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white rounded-lg p-4 border border-indigo-200">
+              <p className="text-gray-700 text-sm"><strong>✓ Set clear acceptance criteria</strong> before voting begins.</p>
             </div>
-
-            <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
-              <div className="flex items-center mb-2">
-                <span className="text-blue-600 mr-2">👥</span>
-                <h5 className="font-medium text-gray-800 text-sm sm:text-base">Session Management</h5>
-              </div>
-              <p className="text-gray-600 text-xs sm:text-sm">
-                Create rooms, manage participants, host controls for revealing and resetting votes.
-              </p>
+            <div className="bg-white rounded-lg p-4 border border-indigo-200">
+              <p className="text-gray-700 text-sm"><strong>✓ Discuss outliers</strong> - ask why highest and lowest voters chose their estimates.</p>
             </div>
-
-            <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
-              <div className="flex items-center mb-2">
-                <span className="text-purple-600 mr-2">🔄</span>
-                <h5 className="font-medium text-gray-800 text-sm sm:text-base">Live Collaboration</h5>
-              </div>
-              <p className="text-gray-600 text-xs sm:text-sm">
-                Real-time updates, synchronized voting, and instant notifications for all participants.
-              </p>
+            <div className="bg-white rounded-lg p-4 border border-indigo-200">
+              <p className="text-gray-700 text-sm"><strong>✓ Encourage questions</strong> - use the ? card to signal need for clarification.</p>
             </div>
-
-            <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
-              <div className="flex items-center mb-2">
-                <span className="text-orange-600 mr-2">🏠</span>
-                <h5 className="font-medium text-gray-800 text-sm sm:text-base">Room Controls</h5>
-              </div>
-              <p className="text-gray-600 text-xs sm:text-sm">
-                Automatic cleanup, participant management, and session persistence across devices.
-              </p>
+            <div className="bg-white rounded-lg p-4 border border-indigo-200">
+              <p className="text-gray-700 text-sm"><strong>✓ Avoid anchoring bias</strong> - reveal all votes simultaneously, never one by one.</p>
             </div>
-          </div>
-        </div>
-
-        {/* How It Works */}
-        <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
-          <h4 className="font-semibold text-gray-800 mb-4 text-center text-sm sm:text-base">🚀 How It Works</h4>
-          <div className="space-y-3">
-            <div className="flex items-start">
-              <span className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 bg-blue-500 text-white rounded-full text-xs flex items-center justify-center font-bold mr-3 mt-0.5">1</span>
-              <p className="text-gray-700 text-xs sm:text-sm"><strong>Create or Join</strong> a planning session room</p>
+            <div className="bg-white rounded-lg p-4 border border-indigo-200">
+              <p className="text-gray-700 text-sm"><strong>✓ Keep it timeboxed</strong> - limit discussion to 5-10 minutes per story.</p>
             </div>
-            <div className="flex items-start">
-              <span className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 bg-blue-500 text-white rounded-full text-xs flex items-center justify-center font-bold mr-3 mt-0.5">2</span>
-              <p className="text-gray-700 text-xs sm:text-sm"><strong>Vote</strong> on story points using Fibonacci cards</p>
-            </div>
-            <div className="flex items-start">
-              <span className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 bg-blue-500 text-white rounded-full text-xs flex items-center justify-center font-bold mr-3 mt-0.5">3</span>
-              <p className="text-gray-700 text-xs sm:text-sm"><strong>Reveal</strong> votes simultaneously to avoid bias</p>
-            </div>
-            <div className="flex items-start">
-              <span className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 bg-blue-500 text-white rounded-full text-xs flex items-center justify-center font-bold mr-3 mt-0.5">4</span>
-              <p className="text-gray-700 text-xs sm:text-sm"><strong>Discuss</strong> and reach consensus on estimates</p>
+            <div className="bg-white rounded-lg p-4 border border-indigo-200">
+              <p className="text-gray-700 text-sm"><strong>✓ Use facilitator role</strong> if you're not directly involved in implementation.</p>
             </div>
           </div>
         </div>
 
         {/* Call to Action */}
-        <div className="text-center pt-4 pb-4">
-          <p className="text-gray-600 mb-4 text-sm sm:text-base">
-            Ready to make your sprint planning more efficient?
+        <div className="text-center pt-4 pb-2 border-t border-gray-200">
+          <p className="text-gray-700 mb-4 text-base font-medium">
+            Ready to make your sprint planning more efficient? 🚀
           </p>
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 text-sm sm:text-base"
+            className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-base"
           >
             Start Planning Session 🎯
           </button>

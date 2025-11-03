@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import Modal from '../common/Modal';
 import styles from './ParticipantList.module.css';
 
 /**
@@ -10,12 +11,64 @@ const ParticipantList = ({
   sessionId, 
   revealed, 
   isHost = false, 
-  onRemoveParticipant 
+  onRemoveParticipant,
+  onPromoteToHost,
+  showConfirm
 }) => {
   
   // Filter state
   const [activeFilter, setActiveFilter] = useState('all');
   const [activeVoteFilter, setActiveVoteFilter] = useState('all-votes');
+  
+  // Modal state for participant management
+  const [showManageModal, setShowManageModal] = useState(false);
+  const [selectedParticipant, setSelectedParticipant] = useState(null);
+  
+  // Handle participant promotion with confirmation
+  const handlePromoteToHost = (participantId, participantName, canVote) => {
+    setShowManageModal(false);
+    setSelectedParticipant(null);
+    
+    if (!showConfirm) {
+      // Fallback if showConfirm not provided
+      onPromoteToHost?.(participantId, participantName, canVote);
+      return;
+    }
+    
+    const roleType = canVote ? 'Host Participant (with voting)' : 'Facilitator (observer only)';
+    
+    showConfirm({
+      title: '⚠️ Transfer Host Privileges',
+      message: `Transfer host control to ${participantName} as ${roleType}?\n\nNote: You will become a regular participant and lose host privileges.\nOnly ONE host is allowed at a time.`,
+      okText: 'Transfer',
+      cancelText: 'Cancel',
+      onOk: () => {
+        onPromoteToHost?.(participantId, participantName, canVote);
+      }
+    });
+  };
+  
+  // Handle participant removal with confirmation
+  const handleRemoveParticipant = (participantId, participantName) => {
+    setShowManageModal(false);
+    setSelectedParticipant(null);
+    
+    if (!showConfirm) {
+      // Fallback if showConfirm not provided
+      onRemoveParticipant?.(participantId, participantName);
+      return;
+    }
+    
+    showConfirm({
+      title: '🗑️ Remove Participant',
+      message: `Are you sure you want to remove ${participantName} from the room?`,
+      okText: 'Remove',
+      cancelText: 'Cancel',
+      onOk: () => {
+        onRemoveParticipant?.(participantId, participantName);
+      }
+    });
+  };
   
   // Reset vote filter when votes are not revealed
   useEffect(() => {
@@ -264,6 +317,7 @@ const ParticipantList = ({
   };
 
   return (
+    <>
     <div className={`w-full flex flex-col h-full min-h-[400px] ${styles.participantContainer}`}>
       <div className="bg-blue-50 rounded-lg shadow-md p-2 sm:p-3 lg:p-4 xl:p-5 2xl:p-6 flex-1 flex flex-col min-w-0 border border-blue-200 h-full min-h-[400px]">
         <div className="mb-3 sm:mb-4 flex-shrink-0">
@@ -408,7 +462,7 @@ const ParticipantList = ({
         )}
         
         <div className={`relative flex-1 min-w-0 min-h-[300px] xl:min-h-[360px] 2xl:min-h-[420px] will-change-scroll ${styles.scrollableArea}`}>
-          <div className="space-y-1.5 sm:space-y-2 xl:space-y-2.5 2xl:space-y-3 h-full overflow-y-auto overflow-x-hidden pr-1 sm:pr-2 xl:pr-3 2xl:pr-4 scroll-smooth absolute inset-0 contain-layout">
+          <div className="space-y-1.5 sm:space-y-2 xl:space-y-2.5 2xl:space-y-3 h-full overflow-y-auto pr-1 sm:pr-2 xl:pr-3 2xl:pr-4 scroll-smooth absolute inset-0 contain-layout">
             {isLoading ? (
               // Loading skeleton
               <div className="space-y-2">
@@ -452,7 +506,7 @@ const ParticipantList = ({
                     ? 'shadow-lg border-green-300 bg-gradient-to-br from-green-50/40 to-emerald-50/30' 
                     : ''
                   }`}
-                style={{ minHeight: '80px' }}
+                style={{ minHeight: '80px', position: 'relative' }}
               >
                 <div className="flex items-center gap-2.5 sm:gap-3">
                   <div className="relative flex-shrink-0">
@@ -499,8 +553,8 @@ const ParticipantList = ({
                             <span className="text-xs sm:text-sm bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full font-semibold whitespace-nowrap border border-blue-200">You</span>
                           )}
                           
-                          {/* Ready status indicator */}
-                          {participant.vote === 'voted' && (
+                          {/* Ready status indicator - only for voting participants who have voted */}
+                          {!participant.isFacilitator && (participant.vote && participant.vote !== 'SKIP' && participant.vote !== null && participant.vote !== '') && (
                             <span className="text-xs bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 px-2 py-0.5 rounded-full font-medium flex items-center gap-1 whitespace-nowrap border border-green-200 shadow-sm">
                               <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -511,16 +565,18 @@ const ParticipantList = ({
                         </div>
                       </div>
                       
-                      {/* Enhanced host controls for removing participants */}
-                      {isHost && !participant.isCurrentUser && !participant.isHost && onRemoveParticipant && (
-                        <button 
-                          onClick={() => onRemoveParticipant(participant.id, participant.name)}
-                          className="text-red-400 hover:text-red-600 p-1.5 sm:p-2 rounded-full hover:bg-red-50 flex-shrink-0"
-                          title="Remove participant"
+                      {/* Host controls - Modify button opens modal */}
+                      {isHost && !participant.isCurrentUser && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedParticipant(participant);
+                            setShowManageModal(true);
+                          }}
+                          className="text-xs bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700 px-2 py-1 rounded-full font-medium hover:from-indigo-200 hover:to-purple-200 transition-all border border-indigo-200 shadow-sm"
+                          title="Manage participant"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                          </svg>
+                          ⚙️ Modify
                         </button>
                       )}
                     </div>
@@ -598,6 +654,110 @@ const ParticipantList = ({
         </div>
       </div>
     </div>
+    
+    {/* Manage Participant Modal */}
+    {showManageModal && selectedParticipant && (
+      <Modal
+        isOpen={showManageModal}
+        onClose={() => {
+          setShowManageModal(false);
+          setSelectedParticipant(null);
+        }}
+        title={`Manage ${selectedParticipant.name}`}
+        type="default"
+        size="md"
+        showOk={false}
+        showCancel={false}
+      >
+        <div className="space-y-2">
+          {!selectedParticipant.isHost ? (
+            <>
+              {/* Transfer Host options */}
+              {participants[sessionId]?.isHost && onPromoteToHost && (
+                <>
+                  <button
+                    onClick={() => handlePromoteToHost(selectedParticipant.id, selectedParticipant.name, true)}
+                    className="w-full text-left px-4 py-3 hover:bg-green-50 rounded-lg transition-colors flex items-center gap-3 border border-green-200"
+                  >
+                    <span className="text-2xl">🎯</span>
+                    <div className="flex-1">
+                      <div className="font-semibold text-gray-900 text-sm">Transfer Host (with voting)</div>
+                      <div className="text-xs text-gray-600 mt-0.5">They become host, you become participant</div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => handlePromoteToHost(selectedParticipant.id, selectedParticipant.name, false)}
+                    className="w-full text-left px-4 py-3 hover:bg-orange-50 rounded-lg transition-colors flex items-center gap-3 border border-orange-200"
+                  >
+                    <span className="text-2xl">👁️</span>
+                    <div className="flex-1">
+                      <div className="font-semibold text-gray-900 text-sm">Transfer as Facilitator</div>
+                      <div className="text-xs text-gray-600 mt-0.5">Observer only, no voting</div>
+                    </div>
+                  </button>
+                </>
+              )}
+              
+              {/* Divider */}
+              {onRemoveParticipant && onPromoteToHost && (
+                <div className="border-t border-gray-200 my-2"></div>
+              )}
+              
+              {/* Remove participant */}
+              {onRemoveParticipant && (
+                <button
+                  onClick={() => handleRemoveParticipant(selectedParticipant.id, selectedParticipant.name)}
+                  className="w-full text-left px-4 py-3 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-3 border border-red-200"
+                >
+                  <span className="text-2xl">🗑️</span>
+                  <div className="flex-1">
+                    <div className="font-semibold text-red-700 text-sm">Remove from Room</div>
+                    <div className="text-xs text-red-600 mt-0.5">Kick this participant</div>
+                  </div>
+                </button>
+              )}
+              
+              {/* Close button at bottom */}
+              <div className="pt-3">
+                <button
+                  onClick={() => {
+                    setShowManageModal(false);
+                    setSelectedParticipant(null);
+                  }}
+                  className="w-full px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="px-4 py-3 text-sm text-gray-600 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">ℹ️</span>
+                  <span>This user is already a host. Only one host allowed at a time.</span>
+                </div>
+              </div>
+              
+              {/* Close button */}
+              <div className="pt-2">
+                <button
+                  onClick={() => {
+                    setShowManageModal(false);
+                    setSelectedParticipant(null);
+                  }}
+                  className="w-full px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </Modal>
+    )}
+    </>
   );
 };
 
@@ -611,7 +771,11 @@ ParticipantList.propTypes = {
   /** Whether the current user is the host */
   isHost: PropTypes.bool,
   /** Function to remove a participant (host only) */
-  onRemoveParticipant: PropTypes.func
+  onRemoveParticipant: PropTypes.func,
+  /** Function to transfer host privileges to a participant (host only) */
+  onPromoteToHost: PropTypes.func,
+  /** Function to show confirmation modal (from useAlertModal) */
+  showConfirm: PropTypes.func
 };
 
 // Use React.memo to prevent unnecessary re-renders

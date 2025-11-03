@@ -35,28 +35,37 @@ export const useRoomOperations = (roomId, state, navigation, alertFunctions) => 
       const existingSessionId = StorageUtils.getSessionId(roomId);
       const sessionId = existingSessionId || uuidv4().substring(0, 8);
       
-      // Add participant to room with minimal data structure
+      // Add participant to room with complete data structure (matching homepage join)
       const participantData = {
         name: name.trim(),
         vote: null,
-        joinedAt: Date.now()
+        joinedAt: Date.now(),
+        isHost: false,
+        isParticipant: true
       };
       
-      await RoomService.addParticipant(roomId, sessionId, participantData);
+      // Add participant WITHOUT email notification (fast join)
+      await RoomService.addParticipantWithoutEmail(roomId, sessionId, participantData);
       
       // Save to localStorage with room-specific keys
       StorageUtils.saveUserSession({
         roomId,
         sessionId,
         userName: name.trim(),
-        isHost: false
+        isHost: false,
+        isParticipant: true
       });
       
       setShowNameModal(false);
       
-      // Only force reload for brand new sessions
+      // Send email notification AFTER user lands in the room (background, non-blocking)
       if (!existingSessionId) {
-        window.location.reload();
+        // Use fire-and-forget for email notification
+        setTimeout(() => {
+          RoomService.sendParticipantJoinedEmail(roomId, participantData).catch(err => {
+            console.error('Failed to send join email:', err);
+          });
+        }, 1000); // Send after 1 second delay to ensure smooth UX
       }
     } catch (error) {
       console.error('Error joining room:', error);

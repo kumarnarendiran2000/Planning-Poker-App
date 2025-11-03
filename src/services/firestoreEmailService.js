@@ -222,6 +222,53 @@ class FirestoreEmailService {
   }
 
   /**
+   * Send role change notification
+   * @param {Object} roleData - Role change information
+   * @param {string} recipientEmail - Email address to send to
+   * @param {boolean} isAdmin - Whether this is for admin (different template)
+   * @returns {Promise<Object>} Email send result
+   */
+  async notifyRoleChanged(roleData, recipientEmail, isAdmin = false) {
+    if (!this.emailCollection) {
+      console.warn('Firestore not available. Email notification skipped.');
+      return { success: false, error: 'Firestore not initialized' };
+    }
+    
+    try {
+      const subject = isAdmin
+        ? `🔔 Admin Alert: Role changed in room ${roleData.roomCode}`
+        : `🎭 Your role has been updated in room ${roleData.roomCode}`;
+        
+      const emailDoc = {
+        to: [recipientEmail],
+        message: {
+          subject,
+          html: this.generateRoleChangedHTML(roleData, isAdmin),
+          text: isAdmin
+            ? `Admin Alert: ${roleData.participantName}'s role was changed to ${roleData.newRole} in room ${roleData.roomCode} by ${roleData.changedBy}.`
+            : `Your role in Planning Poker room ${roleData.roomCode} has been updated to ${roleData.newRole} by ${roleData.changedBy}.`
+        }
+      };
+
+      const docRef = await addDoc(this.emailCollection, emailDoc);
+      
+      return { 
+        success: true, 
+        messageId: docRef.id,
+        provider: 'firebase-extension'
+      };
+
+    } catch (error) {
+      console.error('❌ Failed to queue role change email:', error);
+      return { 
+        success: false, 
+        error: error.message,
+        provider: 'firebase-extension'
+      };
+    }
+  }
+
+  /**
    * Send test email (simplified - no test emails in production)
    * @param {string} recipientEmail - Email to test with
    * @returns {Promise<Object>} Test result
@@ -515,6 +562,81 @@ class FirestoreEmailService {
                         font-weight: 600; 
                         font-size: 14px;">
                 🏠 Create New Room
+              </a>
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div style="background-color: #f7fafc; padding: 20px 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+            <p style="color: #a0aec0; font-size: 11px; margin: 0;">
+              © 2025 Planning Poker App - Team Collaboration Made Easy
+            </p>
+          </div>
+          
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  /**
+   * Generate HTML for role change email
+   */
+  generateRoleChangedHTML(roleData, isAdmin = false) {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Role Updated</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f5f7fa;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%); color: white; padding: 30px 30px; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: bold;">🎭 Planning Poker</h1>
+            <p style="margin: 10px 0 0 0; font-size: 14px; opacity: 0.9;">Role Updated</p>
+          </div>
+          
+          <!-- Content -->
+          <div style="padding: 30px;">
+            <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 20px;">
+              ${roleData.participantName}'s role has been updated
+            </h2>
+            
+            <div style="background-color: #faf5ff; border-left: 4px solid #9f7aea; padding: 16px; margin: 20px 0; border-radius: 4px;">
+              <p style="margin: 0 0 8px 0; color: #2d3748; font-size: 14px;">
+                <strong>New Role:</strong> <span style="color: #9f7aea; font-weight: 600;">${roleData.newRole}</span>
+              </p>
+              <p style="margin: 0 0 8px 0; color: #2d3748; font-size: 14px;">
+                <strong>Changed by:</strong> ${roleData.changedBy}
+              </p>
+              <p style="margin: 0; color: #2d3748; font-size: 14px;">
+                <strong>Room:</strong> ${roleData.roomCode}
+              </p>
+            </div>
+            
+            ${!isAdmin ? `
+            <p style="color: #4a5568; font-size: 14px; line-height: 1.6; margin: 20px 0;">
+              ${roleData.newRole.includes('Host') 
+                ? 'You now have host privileges and can manage the room, reveal votes, and control the session.'
+                : 'Your role has been updated. Continue participating in the Planning Poker session.'}
+            </p>
+            ` : ''}
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${this.getOrigin()}/room/${roleData.roomCode}" 
+                 style="display: inline-block; 
+                        background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%); 
+                        color: white; 
+                        text-decoration: none; 
+                        padding: 12px 24px; 
+                        border-radius: 25px; 
+                        font-weight: 600; 
+                        font-size: 14px;">
+                📊 Back to Room
               </a>
             </div>
           </div>

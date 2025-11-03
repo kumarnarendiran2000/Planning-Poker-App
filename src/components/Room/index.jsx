@@ -110,29 +110,53 @@ const Room = () => {
       return;
     }
     
-    // Show confirmation modal instead of JavaScript popup
-    showConfirm({
-      title: 'Remove Participant',
-      message: `Are you sure you want to remove ${participantName} from the room?`,
-      okText: 'Remove',
-      cancelText: 'Cancel',
-      onOk: async () => {
-        try {
-          // Get host's name for the notification
-          const hostName = participants[sessionId]?.name || 'Host';
-          
-          // Kick the participant (now includes email notifications)
-          await RoomService.kickParticipant(roomId, participantId, hostName, participantName);
-          
-          // Show success notification
-          enhancedToast.success(`${participantName} has been removed from the room`);
-        } catch (error) {
-          console.error('Error removing participant:', error);
-          enhancedToast.error(`Failed to remove participant: ${error.message}`);
-        }
-      }
-    });
-  }, [isHost, roomId, participants, sessionId, showConfirm]);
+    try {
+      // Get host's name for the notification
+      const hostName = participants[sessionId]?.name || 'Host';
+      
+      // Kick the participant (now includes email notifications)
+      await RoomService.kickParticipant(roomId, participantId, hostName, participantName);
+      
+      // NOTE: Success toast shown by useRoomSubscription when it detects participant removal
+    } catch (error) {
+      console.error('Error removing participant:', error);
+      enhancedToast.error(`Failed to remove participant: ${error.message}`);
+    }
+  }, [isHost, roomId, participants, sessionId]);
+  
+  /**
+   * Handle promoting a participant to host (host only)
+   * ALWAYS transfers ownership - only ONE host allowed at a time
+   * @param {string} participantId - The participant to promote
+   * @param {string} participantName - The participant's name
+   * @param {boolean} canVote - Whether the new host can vote (true = Host Participant, false = Facilitator)
+   */
+  /**
+   * Handle promoting a participant to host (host only)
+   * ALWAYS transfers ownership - only ONE host allowed at a time
+   * @param {string} participantId - The participant to promote
+   * @param {string} participantName - The participant's name
+   * @param {boolean} canVote - Whether the new host can vote (true = Host Participant, false = Facilitator)
+   */
+  const handlePromoteToHost = useCallback(async (participantId, participantName, canVote) => {
+    if (!isHost || !roomId) {
+      return;
+    }
+    
+    try {
+      const hostName = participants[sessionId]?.name || 'Host';
+      
+      // ALWAYS transfer: Promote target and demote self (atomic operation)
+      // This ensures only ONE host exists at any time
+      await RoomService.promoteToHost(roomId, participantId, canVote, hostName);
+      await RoomService.demoteFromHost(roomId, sessionId, hostName);
+      
+      // NOTE: Success toast shown by useRoomSubscription when it detects role changes
+    } catch (error) {
+      console.error('Error updating host role:', error);
+      enhancedToast.error(`Failed: ${error.message}`);
+    }
+  }, [isHost, roomId, participants, sessionId]);
   
   // Show loading state
   if (loading) {
@@ -174,6 +198,8 @@ const Room = () => {
             revealed={revealed}
             isHost={isHost}
             onRemoveParticipant={handleRemoveParticipant}
+            onPromoteToHost={handlePromoteToHost}
+            showConfirm={showConfirm}
             stats={stats}
             vote={vote}
             votesSubmitted={votesSubmitted}

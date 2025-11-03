@@ -15,6 +15,8 @@ const RoomMainContent = ({
   revealed,
   isHost,
   onRemoveParticipant,
+  onPromoteToHost,
+  showConfirm,
   stats,
   vote,
   votesSubmitted,
@@ -45,6 +47,8 @@ const RoomMainContent = ({
           revealed={revealed}
           isHost={isHost}
           onRemoveParticipant={onRemoveParticipant}
+          onPromoteToHost={onPromoteToHost}
+          showConfirm={showConfirm}
         />
       </div>
 

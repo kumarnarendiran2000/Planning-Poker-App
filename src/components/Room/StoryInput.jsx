@@ -104,23 +104,21 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
   // For non-hosts, show read-only view
   if (!isHost) {
     return (
-      <div className="w-full">
-        <div className="mb-3 sm:mb-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded-full text-xs sm:text-sm font-semibold">
-            <span className="text-lg">📖</span>
-            <span>Current Story</span>
-          </div>
+      <div className="w-full bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-300 rounded-xl p-4 sm:p-5 shadow-md">
+        <div className="mb-3 flex items-center gap-2">
+          <span className="text-2xl">📖</span>
+          <h3 className="text-sm sm:text-base font-bold text-indigo-900">Current Story</h3>
         </div>
         {storyName ? (
-          <div className="w-full p-4 sm:p-5 bg-indigo-50 border-2 border-indigo-200 rounded-xl text-sm sm:text-base text-gray-800 min-h-[60px] sm:min-h-[70px] flex items-center">
+          <div className="w-full p-3 sm:p-4 bg-white border-2 border-indigo-200 rounded-lg text-sm sm:text-base text-gray-800 min-h-[50px] sm:min-h-[60px] flex items-center shadow-sm">
             <div className="w-full break-words whitespace-pre-wrap font-medium leading-relaxed">
-              <span className="text-indigo-600">📋</span> {storyName}
+              <span className="text-indigo-600 text-base mr-2">📋</span> {storyName}
             </div>
           </div>
         ) : (
-          <div className="w-full p-4 sm:p-5 bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl text-sm sm:text-base text-gray-500 min-h-[60px] sm:min-h-[70px] flex items-center justify-center italic">
+          <div className="w-full p-3 sm:p-4 bg-white border-2 border-dashed border-gray-300 rounded-lg text-sm sm:text-base text-gray-500 min-h-[50px] sm:min-h-[60px] flex items-center justify-center italic">
             <span className="flex items-center gap-2">
-              <span className="text-lg opacity-50">📝</span>
+              <span className="text-base opacity-50">📝</span>
               <span>No story specified</span>
             </span>
           </div>
@@ -131,17 +129,17 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
 
   // For hosts, show editable view
   return (
-    <div className="w-full">
-      <div className="mb-3 sm:mb-4 flex items-center justify-between">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded-full text-xs sm:text-sm font-semibold">
-          <span className="text-lg">📖</span>
-          <span>Story / User Story</span>
+    <div className="w-full bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-300 rounded-xl p-4 sm:p-5 shadow-md">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">📖</span>
+          <h3 className="text-sm sm:text-base font-bold text-indigo-900">Story / User Story</h3>
         </div>
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
             disabled={disabled}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white text-xs sm:text-sm font-medium rounded-full hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-100"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 shadow-sm"
           >
             <span>✏️</span>
             <span className="hidden sm:inline">Edit Story</span>
@@ -151,7 +149,7 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
       </div>
       
       {isEditing ? (
-        <div className="w-full space-y-4">
+        <div className="w-full space-y-3">
           <div className="relative">
             <textarea
               ref={textareaRef}
@@ -160,7 +158,7 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
               onKeyDown={handleKeyDown}
               placeholder="📝 Enter story name, number, or description (e.g., 'STORY-123: User login feature')"
               disabled={disabled || isSaving}
-              className="w-full p-4 sm:p-5 border-2 border-indigo-300 rounded-xl resize-none text-sm sm:text-base focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px] sm:min-h-[90px] md:min-h-[100px] bg-white"
+              className="w-full p-4 border-2 border-indigo-400 rounded-lg resize-none text-sm sm:text-base focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px] sm:min-h-[90px] bg-white shadow-sm"
               rows={3}
               autoFocus
             />
@@ -172,7 +170,7 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
             <button
               onClick={handleSave}
               disabled={disabled || isSaving}
-              className="flex-1 sm:flex-none px-4 py-2.5 sm:px-6 sm:py-3 bg-emerald-500 text-white text-sm sm:text-base font-semibold rounded-xl hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-100 flex items-center justify-center gap-2"
+              className="flex-1 sm:flex-none px-4 py-2.5 sm:px-6 sm:py-3 bg-emerald-500 text-white text-sm sm:text-base font-semibold rounded-lg hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 flex items-center justify-center gap-2 shadow-sm"
             >
               {isSaving ? (
                 <>
@@ -181,7 +179,7 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
                 </>
               ) : (
                 <>
-                  <span className="text-lg">💾</span>
+                  <span className="text-base">💾</span>
                   <span>Save Story</span>
                 </>
               )}
@@ -189,26 +187,26 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
             <button
               onClick={handleCancel}
               disabled={disabled || isSaving}
-              className="flex-1 sm:flex-none px-4 py-2.5 sm:px-6 sm:py-3 bg-gray-500 text-white text-sm sm:text-base font-semibold rounded-xl hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-100 flex items-center justify-center gap-2"
+              className="flex-1 sm:flex-none px-4 py-2.5 sm:px-6 sm:py-3 bg-gray-500 text-white text-sm sm:text-base font-semibold rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 flex items-center justify-center gap-2 shadow-sm"
             >
-              <span className="text-lg">❌</span>
+              <span className="text-base">❌</span>
               <span>Cancel</span>
             </button>
           </div>
         </div>
       ) : (
         <div 
-          className="w-full p-4 sm:p-5 bg-indigo-50 border-2 border-indigo-200 rounded-xl cursor-pointer hover:border-indigo-400 min-h-[60px] sm:min-h-[70px] flex items-center"
+          className="w-full p-3 sm:p-4 bg-white border-2 border-indigo-200 rounded-lg cursor-pointer hover:bg-indigo-50 hover:border-indigo-400 hover:shadow-md min-h-[50px] sm:min-h-[60px] flex items-center transition-all duration-200 shadow-sm"
           onClick={() => !disabled && setIsEditing(true)}
         >
           {storyName ? (
             <div className="w-full text-sm sm:text-base text-gray-800 break-words whitespace-pre-wrap font-medium leading-relaxed">
-              <span className="text-indigo-600 mr-2">📋</span>{storyName}
+              <span className="text-indigo-600 text-base mr-2">📋</span>{storyName}
               <span className="ml-2 text-indigo-400">✏️</span>
             </div>
           ) : (
             <div className="w-full text-sm sm:text-base text-gray-500 italic flex items-center justify-center gap-2">
-              <span className="text-xl opacity-50">📝</span>
+              <span className="text-base opacity-50">📝</span>
               <span>Click to add story name or number...</span>
               <span className="text-indigo-400">✨</span>
             </div>

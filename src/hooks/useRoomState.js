@@ -18,7 +18,9 @@ export const useRoomState = (roomId) => {
   // Get user data from storage
   const userName = StorageUtils.getUserName(roomId);
   const sessionId = StorageUtils.getSessionId(roomId);
-  const isHost = StorageUtils.isUserHost(roomId);
+  
+  // Make isHost a state variable that can be updated dynamically
+  const [isHost, setIsHost] = useState(() => StorageUtils.isUserHost(roomId));
 
   return {
     // State values
@@ -42,6 +44,7 @@ export const useRoomState = (roomId) => {
     setShowNameModal,
     setCountdown,
     setResetState,
-    setStory
+    setStory,
+    setIsHost
   };
 };

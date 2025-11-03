@@ -327,7 +327,7 @@ const FeedbackModal = ({ isOpen, onClose, roomId, userRole, userName = '' }) => 
 
   return (
     <Modal isOpen={isOpen} onClose={step === 2 ? onClose : onClose} size="lg" showOk={false} showCancel={false}>
-      <div className="max-w-2xl mx-auto">
+      <div className="w-full">
         {step === 1 ? (
           <>
             {/* Header */}

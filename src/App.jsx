@@ -7,6 +7,7 @@ import ActiveSessions from './components/ActiveSessions'
 import Room from './components/Room/index'
 import FeedbackAnalytics from './components/admin/FeedbackAnalytics'
 import AboutModal from './components/modals/AboutModal'
+import FeedbackButton from './components/common/FeedbackButton'
 import { runCleanupIfNeeded } from './services/cleanupService'
 import { useActiveSessionMonitor } from './hooks/useActiveSessionMonitor'
 
@@ -108,6 +109,11 @@ function Home() {
           </div>
         </div>
       </div>
+      
+      {/* Feedback Button */}
+      <FeedbackButton 
+        userRole="visitor"
+      />
       
       {/* Modals */}
       <AboutModal 

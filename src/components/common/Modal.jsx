@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 
 /**
@@ -15,8 +16,17 @@ const Modal = ({
   showCancel = true,
   showOk = true,
   type = 'default', // 'default', 'confirm', 'error', 'warning', 'success'
+  size = 'md', // 'sm', 'md', 'lg', 'xl', 'full'
   className = ''
 }) => {
+  // Size classes for responsive design
+  const sizeClasses = {
+    sm: 'max-w-sm',
+    md: 'max-w-md',
+    lg: 'max-w-2xl', // Wider for better web experience
+    xl: 'max-w-4xl', // Extra wide for detailed content
+    full: 'max-w-7xl'
+  };
   // Handle body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -85,21 +95,29 @@ const Modal = ({
 
   const currentStyle = modalStyles[type];
 
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-      {/* VDI-optimized backdrop - simple and fast */}
+  // Render modal in a Portal to ensure it covers the entire screen
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
+      {/* Backdrop with blur effect */}
       <div 
-        className="fixed inset-0 bg-black/60 z-[9998]" 
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998]" 
         onClick={onClose}
       ></div>
       
-      {/* VDI-optimized modal - no animations or complex effects */}
-      <div className={`
-        relative z-[10000] bg-white rounded-xl border-2 w-full max-w-md overflow-hidden 
-        max-h-[90vh] overflow-y-auto
-        ${currentStyle.border}
-        ${className}
-      `}>
+      {/* Modal container - with blurred/soft borders */}
+      <div 
+        className={`
+          relative z-[10000] bg-white rounded-2xl w-full 
+          max-h-[90vh] sm:max-h-[85vh] overflow-y-auto
+          shadow-[0_25px_60px_-12px_rgba(0,0,0,0.4)]
+          ${sizeClasses[size]}
+          ${currentStyle.border}
+          ${className}
+        `}
+        style={{
+          filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.1))',
+        }}
+      >
         {/* Top-right close button */}
         <button
           onClick={onClose}
@@ -150,7 +168,8 @@ const Modal = ({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
@@ -175,6 +194,8 @@ Modal.propTypes = {
   showOk: PropTypes.bool,
   /** Modal type affecting styling */
   type: PropTypes.oneOf(['default', 'confirm', 'error', 'warning', 'success']),
+  /** Modal size */
+  size: PropTypes.oneOf(['sm', 'md', 'lg', 'xl', 'full']),
   /** Additional className for the modal */
   className: PropTypes.string
 };
