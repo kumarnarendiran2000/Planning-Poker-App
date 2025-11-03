@@ -15,7 +15,7 @@ const Modal = ({
   onOk,
   showCancel = true,
   showOk = true,
-  type = 'default', // 'default', 'confirm', 'error', 'warning', 'success'
+  type = 'default', // 'default', 'create', 'confirm', 'error', 'warning', 'success'
   size = 'md', // 'sm', 'md', 'lg', 'xl', 'full'
   className = ''
 }) => {
@@ -49,6 +49,12 @@ const Modal = ({
       headerBorder: 'border-b border-indigo-200',
       textColor: 'text-indigo-900'
     },
+    create: {
+      border: 'border-l-4 border-l-blue-500 border-t-4 border-t-indigo-500 border-r-4 border-r-purple-500',
+      headerBg: 'bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50',
+      headerBorder: 'border-b-2 border-gradient-to-r from-blue-200 via-indigo-200 to-purple-200',
+      textColor: 'text-indigo-900'
+    },
     confirm: {
       border: 'border-l-4 border-blue-500',
       headerBg: 'bg-blue-50',
@@ -75,18 +81,20 @@ const Modal = ({
     }
   };
 
-  // Enhanced modal icons with better styling
+  // Modal icons - VDI optimized without animations
   const icons = {
-    confirm: <span className="text-2xl text-blue-500 mr-3 animate-pulse">❓</span>,
-    error: <span className="text-2xl text-red-500 mr-3 animate-bounce">⚠️</span>,
-    warning: <span className="text-2xl text-amber-500 mr-3 animate-pulse">⚠️</span>,
-    success: <span className="text-2xl text-green-500 mr-3 animate-bounce">✅</span>,
-    default: <span className="text-2xl text-indigo-500 mr-3">💬</span>
+    default: <span className="text-2xl text-indigo-500 mr-3">💬</span>,
+    create: <span className="text-2xl mr-3">🚀</span>,
+    confirm: <span className="text-2xl text-blue-500 mr-3">❓</span>,
+    error: <span className="text-2xl text-red-500 mr-3">⚠️</span>,
+    warning: <span className="text-2xl text-amber-500 mr-3">⚠️</span>,
+    success: <span className="text-2xl text-green-500 mr-3">✅</span>
   };
 
   // VDI-optimized button styles - simple and fast
   const okButtonStyles = {
     default: 'bg-indigo-600',
+    create: 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700',
     confirm: 'bg-blue-600',
     error: 'bg-red-600',
     warning: 'bg-amber-600',
@@ -118,14 +126,15 @@ const Modal = ({
           filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.1))',
         }}
       >
-        {/* Top-right close button */}
+        {/* Top-right close button - Enhanced visibility */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-700 z-10"
+          className="absolute top-4 right-4 w-10 h-10 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center text-gray-700 hover:text-gray-900 shadow-md border-2 border-gray-300 hover:border-gray-400 transition-colors duration-200"
           aria-label="Close modal"
+          title="Close"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg className="w-5 h-5 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
@@ -193,7 +202,7 @@ Modal.propTypes = {
   /** Whether to show the ok button */
   showOk: PropTypes.bool,
   /** Modal type affecting styling */
-  type: PropTypes.oneOf(['default', 'confirm', 'error', 'warning', 'success']),
+  type: PropTypes.oneOf(['default', 'create', 'confirm', 'error', 'warning', 'success']),
   /** Modal size */
   size: PropTypes.oneOf(['sm', 'md', 'lg', 'xl', 'full']),
   /** Additional className for the modal */

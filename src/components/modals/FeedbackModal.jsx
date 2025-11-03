@@ -260,7 +260,7 @@ const FeedbackModal = ({ isOpen, onClose, roomId, userRole, userName = '' }) => 
             key={star}
             type="button"
             onClick={() => handleRatingChange(star)}
-            className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-200 border-2 hover:scale-110 ${
+            className={`w-16 h-16 rounded-full flex items-center justify-center transition-colors duration-200 border-2 ${
               star <= formData.rating
                 ? 'text-yellow-500 bg-yellow-100 border-yellow-400 shadow-lg'
                 : 'text-gray-400 bg-gray-100 border-gray-300 hover:text-yellow-400 hover:bg-yellow-50'
@@ -315,7 +315,7 @@ const FeedbackModal = ({ isOpen, onClose, roomId, userRole, userName = '' }) => 
         {/* OK Button */}
         <button
           onClick={onClose}
-          className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-lg font-semibold rounded-xl hover:from-green-600 hover:to-emerald-600 focus:ring-4 focus:ring-green-200 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2 mx-auto"
+          className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-lg font-semibold rounded-xl hover:from-green-600 hover:to-emerald-600 focus:ring-4 focus:ring-green-200 transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 mx-auto"
         >
           <span>✅</span>
           <span>OK, Got it!</span>

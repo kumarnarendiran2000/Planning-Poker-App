@@ -109,70 +109,80 @@ const ActiveSessions = ({ onSessionDeleted }) => {
     }
   };
 
-  // Don't render if no active sessions
+  // Show "No active sessions" message if empty
   if (sessions.length === 0) {
-    return null;
+    return (
+      <div className="flex flex-col items-center justify-center py-8 text-center">
+        <div className="text-5xl mb-3 opacity-50">🗂️</div>
+        <p className="text-gray-500 font-medium text-sm mb-1">No Active Sessions</p>
+        <p className="text-xs text-gray-400">Create or join a room to get started</p>
+      </div>
+    );
   }
 
   return (
-    <div className="mt-8 pt-4 border-t border-gray-200">
-      <h3 className="text-lg font-semibold text-gray-700 mb-4">Your Active Sessions</h3>
-      <div className="space-y-4">
-        {sessions.map((session) => (
-          <div 
-            key={session.roomId} 
-            className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm text-gray-500">Room</div>
-                <div className="font-medium">{session.roomId}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">Name</div>
-                <div className="font-medium">{session.userName}</div>
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handleJoinSession(session)}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors duration-200"
-                >
-                  Join
-                </button>
-                <button
-                  onClick={() => handleDeleteSession(session)}
-                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors duration-200"
-                  title="Leave room and remove your participation"
-                >
-                  Leave
-                </button>
-              </div>
+    <div className="space-y-2.5">
+      {sessions.map((session) => (
+        <div 
+          key={session.roomId} 
+          className="bg-gradient-to-br from-gray-50 to-white rounded-lg border border-gray-200 p-3 shadow-sm hover:shadow-md hover:border-purple-300 transition-all duration-200 group"
+        >
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Room Code</div>
+              <div className="font-mono font-bold text-sm text-gray-900 tracking-wider truncate">{session.roomId}</div>
             </div>
-{(() => {
-              // Determine role based on isHost and isParticipant flags
+            {(() => {
+              // Determine role badge
               let role = null;
               let badgeStyle = '';
+              let icon = '';
               
               if (session.isHost && session.isParticipant) {
-                role = 'Host Participant';
-                badgeStyle = 'bg-green-100 text-green-700';
+                role = 'Host';
+                icon = '👑';
+                badgeStyle = 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border border-green-200';
               } else if (session.isHost && !session.isParticipant) {
                 role = 'Facilitator';
-                badgeStyle = 'bg-blue-100 text-blue-700';
-              } else if (!session.isHost && session.isParticipant) {
+                icon = '🎯';
+                badgeStyle = 'bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700 border border-orange-200';
+              } else {
                 role = 'Participant';
-                badgeStyle = 'bg-purple-100 text-purple-700';
+                icon = '👤';
+                badgeStyle = 'bg-gradient-to-r from-purple-100 to-violet-100 text-purple-700 border border-purple-200';
               }
               
-              return role ? (
-                <div className="mt-2 text-sm">
-                  <span className={`${badgeStyle} px-2 py-1 rounded-full`}>{role}</span>
-                </div>
-              ) : null;
+              return (
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${badgeStyle}`}>
+                  <span>{icon}</span>
+                  <span>{role}</span>
+                </span>
+              );
             })()}
           </div>
-        ))}
-      </div>
+          
+          <div className="mb-2">
+            <div className="text-xs font-medium text-gray-500 mb-0.5">Name</div>
+            <div className="text-sm font-medium text-gray-800 truncate">{session.userName}</div>
+          </div>
+          
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleJoinSession(session)}
+              className="flex-1 px-3 py-1.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
+            >
+              Join
+            </button>
+            <button
+              onClick={() => handleDeleteSession(session)}
+              className="px-3 py-1.5 bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-red-700 text-xs font-semibold rounded-lg transition-all duration-200 border border-gray-200 hover:border-red-300"
+              title="Leave room and remove your participation"
+            >
+              Leave
+            </button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

@@ -23,6 +23,7 @@ const RoomModals = ({
         isOpen={showNameModal}
         onSubmit={onNameSubmit}
         onClose={onNameModalClose}
+        roomId={roomId}
       />
       
       <DeleteRoomModal

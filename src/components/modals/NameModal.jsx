@@ -3,43 +3,29 @@ import PropTypes from 'prop-types';
 import Modal from '../common/Modal';
 import { validateUserName, clearErrorOnInput } from '../../utils/formValidation';
 
-/**
- * Modal for entering a user's name to join a room
- */
-function NameModal({ isOpen, onSubmit, onClose }) {
+function NameModal({ isOpen, onSubmit, onClose, roomId }) {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
 
-  /**
-   * Handle OK button click
-   */
   const handleModalOk = () => {
     const validation = validateUserName(name);
     if (!validation.isValid) {
       setError(validation.error);
       return;
     }
-    // Clear any previous errors
     setError('');
     onSubmit(name);
     setName('');
   };
 
-  /**
-   * Handle key press in input field
-   */
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       handleModalOk();
     }
   };
 
-  /**
-   * Handle input change
-   */
   const handleNameChange = (e) => {
     setName(e.target.value);
-    // Clear error when user starts typing
     setError(clearErrorOnInput(e.target.value, error));
   };
 
@@ -47,76 +33,95 @@ function NameModal({ isOpen, onSubmit, onClose }) {
     <Modal
       isOpen={isOpen}
       onClose={() => {
-        // Clear any errors before closing
         setError('');
         onClose();
       }}
-      title="🎯 Enter Your Name"
+      title="Join Planning Poker Room"
       showCancel={true}
       showOk={true}
-      okText="🚀 Join Room"
+      okText="Join Room"
       onOk={handleModalOk}
       type="confirm"
+      size="lg"
     >
-      <div className="py-2">
-        <p className="text-gray-700 mb-6 leading-relaxed">
-          Welcome to this Planning Poker session! Please enter your name to join the team and start estimating.
-        </p>
-        
-        <div className="mb-4">
-          <label htmlFor="name" className="block text-gray-800 font-semibold mb-3 flex items-center">
-            <span className="text-blue-500 mr-2">👤</span>
-            Your Name
-          </label>
-          <input
-            type="text"
-            id="name"
-            className={`w-full px-4 py-3 border-2 ${
-              error 
-                ? 'border-red-400 focus:border-red-500 focus:ring-red-200' 
-                : 'border-blue-200 focus:border-blue-500 focus:ring-blue-200'
-            } rounded-lg focus:outline-none focus:ring-2 bg-white text-gray-800 placeholder-gray-400 font-medium`}
-            placeholder="e.g., John Doe"
-            value={name}
-            onChange={handleNameChange}
-            onKeyPress={handleKeyPress}
-            autoFocus
-          />
-          {error && (
-            <div className="mt-3 p-3 bg-red-50 border-l-4 border-red-400 rounded-r-lg">
-              <p className="text-sm text-red-700 font-medium flex items-center">
-                <span className="mr-2">⚠️</span>
-                {error}
-              </p>
-            </div>
-          )}
+      <form onSubmit={(e) => { e.preventDefault(); handleModalOk(); }} className="space-y-6">
+        <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <span className="text-2xl">👋</span>
+          <div>
+            <p className="text-sm text-gray-700 leading-relaxed font-medium mb-1">
+              Welcome! You are about to join the Planning Poker session.
+            </p>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              Enter your name below to start collaborating with your team on story estimates.
+            </p>
+          </div>
         </div>
 
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-blue-700 text-sm font-medium flex items-center">
-            <span className="mr-2">💡</span>
-            Tip: Use your real name so team members can easily identify you!
-          </p>
+        {roomId && (
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Room Code
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <span className="text-blue-500 text-xl">🔑</span>
+              </div>
+              <div className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 bg-gray-50 rounded-xl font-mono text-lg tracking-wider text-gray-700 font-bold">
+                {roomId}
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-gray-500">
+              Room code detected from link
+            </p>
+          </div>
+        )}
+
+        <div>
+          <label htmlFor="join-name-modal" className="block text-sm font-semibold text-gray-700 mb-2">
+            Your Name <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <span className="text-blue-500 text-xl">👤</span>
+            </div>
+            <input
+              id="join-name-modal"
+              type="text"
+              placeholder="Enter your name"
+              value={name}
+              onChange={handleNameChange}
+              onKeyPress={handleKeyPress}
+              required
+              className={`w-full pl-12 pr-4 py-3 border-2 ${error && !name.trim() ? 'border-red-500 bg-red-50' : 'border-gray-300 focus:border-blue-500'} rounded-xl focus:outline-none focus:ring-2 ${error && !name.trim() ? 'focus:ring-red-500' : 'focus:ring-blue-500'} transition-colors duration-200`}
+              autoFocus
+            />
+          </div>
+          <p className="mt-2 text-xs text-gray-500">Use your real name so teammates can identify you</p>
         </div>
-      </div>
+
+        {error && (
+          <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
+            <p className="text-sm text-red-700 flex items-start gap-2">
+              <span className="text-lg">⚠️</span>
+              <span>{error}</span>
+            </p>
+          </div>
+        )}
+      </form>
     </Modal>
   );
 }
 
 NameModal.propTypes = {
-  /** Whether the modal is visible */
   isOpen: PropTypes.bool.isRequired,
-  /** Function to call when name is submitted */
   onSubmit: PropTypes.func.isRequired,
-  /** Function to close the modal */
-  onClose: PropTypes.func.isRequired
+  onClose: PropTypes.func.isRequired,
+  roomId: PropTypes.string
 };
 
-/**
- * Default props for the NameModal component
- */
 NameModal.defaultProps = {
-  isOpen: false
+  isOpen: false,
+  roomId: null
 };
 
 export default NameModal;

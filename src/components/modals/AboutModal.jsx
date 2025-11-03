@@ -18,7 +18,7 @@ const AboutModal = ({ isOpen, onClose }) => {
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">About Planning Poker</h2>
           <button
             onClick={onClose}
-            className="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+            className="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-colors duration-200"
           >
             <span className="mr-2">←</span>
             <span>Back to Home</span>
@@ -138,7 +138,7 @@ const AboutModal = ({ isOpen, onClose }) => {
                 
                 <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-lg">�️</span>
+                    <span className="text-lg">🎯</span>
                     <h5 className="font-semibold text-orange-800 text-sm">Facilitator (Observer)</h5>
                   </div>
                   <p className="text-gray-700 text-xs leading-relaxed">
@@ -244,7 +244,7 @@ const AboutModal = ({ isOpen, onClose }) => {
           </p>
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-base"
+            className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-colors duration-200 text-base"
           >
             Start Planning Session 🎯
           </button>

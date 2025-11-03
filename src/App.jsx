@@ -31,7 +31,7 @@ function NavigationHeader() {
           <nav className="flex items-center gap-4">
             <Link
               to="/"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white text-sm font-medium rounded-full shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white text-sm font-medium rounded-full shadow-md hover:shadow-lg transition-colors duration-200"
             >
               <span>🏠</span>
               <span>Back to Home</span>
@@ -66,49 +66,180 @@ function Home() {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-green-100 py-6 flex flex-col justify-center sm:py-12">
-      <div className="relative py-3 sm:max-w-xl sm:mx-auto">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-green-400 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
-        <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
-          <div className="max-w-md mx-auto">
-            <div className="divide-y divide-gray-200">
-              <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
-                <h1 className="text-3xl font-bold text-center mb-4 text-gray-800">Planning Poker</h1>
-                
-                {/* Action buttons */}
-                <div className="flex flex-wrap justify-center gap-3 mb-6">
-                  <button
-                    onClick={() => setShowAboutModal(true)}
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm"
-                  >
-                    <span className="mr-2">ℹ️</span>
-                    Learn about Planning Poker
-                  </button>
-                </div>
-                
-                {/* Display active sessions at the top */}
-                <ActiveSessions 
-                  key={`sessions-${sessionsUpdated}`} 
-                  onSessionDeleted={handleSessionDeleted} 
-                />
-                
-                <CreateRoom />
-                <div className="relative py-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300"></div>
-                  </div>
-                  <div className="relative flex justify-center">
-                     <span className="px-4 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white text-sm font-bold rounded-full shadow-md">OR</span>
-                  </div>
-                </div>
-                <JoinRoom />
-                
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex flex-col">
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-md">
+                <span className="text-2xl">🃏</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-gray-900 uppercase" style={{ letterSpacing: '0.05em' }}>
+                Planning Poker
+              </h1>
+            </div>
+            <button
+              onClick={() => setShowAboutModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-sm font-medium rounded-full shadow-md hover:shadow-lg transition-colors duration-200"
+            >
+              <span>ℹ️</span>
+              <span className="hidden sm:inline">Learn About Planning Poker</span>
+              <span className="sm:hidden">Learn More</span>
+            </button>
+          </div>
+        </div>
+      </header>
 
+      {/* Main Content */}
+      <main className="flex-grow py-6 sm:py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+        <div className="max-w-7xl w-full">
+          {/* Wrapper Card with Glass Effect */}
+          <div className="bg-white/50 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/60 p-6 sm:p-8 lg:p-10 mb-8">
+            {/* Three Column Grid - Active Sessions, Create, Join */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Active Sessions Card */}
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-400 to-pink-500 rounded-3xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+              <div className="relative bg-white rounded-3xl shadow-2xl p-5 border border-gray-100 hover:shadow-3xl transition-all duration-300 h-full flex flex-col">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg flex-shrink-0">
+                    <span className="text-xl">📋</span>
+                  </div>
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-800">Active Sessions</h2>
+                    <p className="text-xs text-gray-500">Your ongoing rooms</p>
+                  </div>
+                </div>
+                <div className="flex-grow overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
+                  <ActiveSessions 
+                    key={`sessions-${sessionsUpdated}`} 
+                    onSessionDeleted={handleSessionDeleted} 
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Create Room Card */}
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-3xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+              <div className="relative bg-white rounded-3xl shadow-2xl p-5 border border-gray-100 hover:shadow-3xl transition-all duration-300 h-full flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg flex-shrink-0">
+                      <span className="text-xl">🚀</span>
+                    </div>
+                    <div>
+                      <h2 className="text-lg sm:text-xl font-bold text-gray-800">Create Room</h2>
+                      <p className="text-xs text-gray-500">Start a new session</p>
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm text-gray-600 mb-3">
+                    Host a new Planning Poker session and invite your team
+                  </p>
+                  
+                  {/* Compact Features List */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <span className="text-green-500">✓</span>
+                      <span>Choose your role: Host or Facilitator</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <span className="text-green-500">✓</span>
+                      <span>Optional email notifications</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <span className="text-green-500">✓</span>
+                      <span>Control reveals and resets</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4">
+                  <CreateRoom />
+                </div>
+              </div>
+            </div>
+
+            {/* Join Room Card */}
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-3xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+              <div className="relative bg-white rounded-3xl shadow-2xl p-5 border border-gray-100 hover:shadow-3xl transition-all duration-300 h-full flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg flex-shrink-0">
+                      <span className="text-xl">👥</span>
+                    </div>
+                    <div>
+                      <h2 className="text-lg sm:text-xl font-bold text-gray-800">Join Room</h2>
+                      <p className="text-xs text-gray-500">Enter an existing session</p>
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm text-gray-600 mb-3">
+                    Have a room code? Join your team's session
+                  </p>
+                  
+                  {/* Compact Features List */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <span className="text-green-500">✓</span>
+                      <span>Enter name and room code</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <span className="text-green-500">✓</span>
+                      <span>Vote with Fibonacci sequence</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <span className="text-green-500">✓</span>
+                      <span>Real-time team estimates</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4">
+                  <JoinRoom />
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Feature Highlights - Inside Wrapper Card */}
+          <div className="border-t border-gray-200 pt-8">
+            <h3 className="text-center text-lg font-semibold text-gray-800 mb-6">Why Choose Planning Poker?</h3>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              {[
+                { icon: '⚡', title: 'Real-time Sync', desc: 'Instant updates across all devices' },
+                { icon: '🎯', title: 'Role-Based', desc: 'Host, Participant, or Facilitator modes' },
+                { icon: '📊', title: 'Statistics', desc: 'Automatic consensus detection' },
+                { icon: '📧', title: 'Notifications', desc: 'Optional email updates' }
+              ].map((feature, idx) => (
+                <div key={idx} className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-sm hover:shadow-lg hover:bg-white transition-all duration-200">
+                  <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">{feature.icon}</div>
+                  <h3 className="font-semibold text-gray-800 mb-1 text-sm sm:text-base">{feature.title}</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">{feature.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white/80 backdrop-blur-md border-t border-gray-200 shadow-sm mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p className="text-sm text-gray-600">
+              © 2025 Planning Poker • Real-time Agile Estimation
+            </p>
+            <div className="flex items-center gap-4 text-sm text-gray-500">
+              <span>Made with ❤️ for Agile Teams</span>
+            </div>
+          </div>
+        </div>
+      </footer>
       
       {/* Feedback Button */}
       <FeedbackButton 
