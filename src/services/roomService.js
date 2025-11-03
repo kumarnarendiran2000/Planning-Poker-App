@@ -448,8 +448,49 @@ class RoomService {
    * @returns {Promise} Promise resolving when participant is added
    */
   static async addParticipant(roomId, participantId, participantData) {
-    const participantRef = this.getParticipantRef(roomId, participantId);
-    return set(participantRef, participantData);
+    try {
+      const participantRef = this.getParticipantRef(roomId, participantId);
+      await set(participantRef, participantData);
+      
+      // Send email notifications for participant joining (non-blocking)
+      if (participantData.name) {
+        (() => {
+          const sendNotifications = async () => {
+            try {
+              const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
+              
+              const notificationData = {
+                roomCode: roomId,
+                participantName: participantData.name,
+                participantRole: 'Participant',
+                joinedAt: participantData.joinedAt || Date.now()
+              };
+              
+              // Always notify admin
+              await firestoreEmailService.notifyParticipantJoined(notificationData, 'kumarnarendiran2000@gmail.com', true);
+              
+              // Get room data to check for user email notifications
+              const roomRef = this.getRoomRef(roomId);
+              const roomSnapshot = await get(roomRef);
+              if (roomSnapshot.exists()) {
+                const roomData = roomSnapshot.val();
+                if (roomData.emailNotifications?.enabled && roomData.emailNotifications?.userEmail) {
+                  await firestoreEmailService.notifyParticipantJoined(notificationData, roomData.emailNotifications.userEmail, false);
+                }
+              }
+            } catch (emailError) {
+              // Email notification failed - continue with participant addition
+            }
+          };
+          sendNotifications(); // Fire and forget
+        })();
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error adding participant:', error);
+      throw error;
+    }
   }
   
   /**

@@ -151,8 +151,9 @@ export const joinRoom = async (roomCode, name) => {
   // Create participant data (joiners are always participants)
   const participantData = createParticipantData(name, false, true);
   
-  // Add participant to room
-  await set(ref(db, `rooms/${roomCode}/participants/${sessionId}`), participantData);
+  // Add participant to room using RoomService (handles email notifications)
+  const RoomService = (await import('../services/roomService.js')).default;
+  await RoomService.addParticipant(roomCode, sessionId, participantData);
   
   // Save session data
   StorageUtils.saveUserSession({
@@ -162,41 +163,6 @@ export const joinRoom = async (roomCode, name) => {
     isHost: false,
     isParticipant: true
   });
-  
-  // Send email notifications for participant joining (non-blocking for better performance)
-  (() => {
-    const sendNotifications = async () => {
-      try {
-        const participantData = {
-          roomCode,
-          participantName: name.trim(),
-          joinedAt: Date.now()
-        };
-        
-        // Always notify admin (with admin-specific content)
-        const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
-        await firestoreEmailService.notifyParticipantJoined(participantData, 'kumarnarendiran2000@gmail.com', true);
-        
-        // Use Firebase's real-time database consistency - no artificial delays needed
-        
-        // Get room data to check for user email notifications
-        const roomRef = ref(db, `rooms/${roomCode}`);
-        const roomSnapshot = await get(roomRef);
-        
-        if (roomSnapshot.exists()) {
-          const roomData = roomSnapshot.val();
-          
-          if (roomData.emailNotifications?.enabled && roomData.emailNotifications?.userEmail) {
-            const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
-            await firestoreEmailService.notifyParticipantJoined(participantData, roomData.emailNotifications.userEmail, false);
-          }
-        }
-      } catch (error) {
-        // Email notification failed - continue with participant join
-      }
-    };
-    sendNotifications(); // Fire and forget
-  })();
   
   return sessionId;
 };
