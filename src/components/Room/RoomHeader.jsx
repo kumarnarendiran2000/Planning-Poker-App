@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 
 /**
  * Room header component containing title and room information
- * Displays the room title, room ID, host badge, and participant count if applicable
+ * Displays the room title, room ID, host badge, participant count, and leave button
  */
-const RoomHeader = ({ roomId, isHost, isParticipant = true, participantCount }) => {
+const RoomHeader = ({ roomId, isHost, isParticipant = true, participantCount, onLeaveRoom }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopyRoomCode = async () => {
@@ -33,7 +34,7 @@ const RoomHeader = ({ roomId, isHost, isParticipant = true, participantCount }) 
           Planning Poker
         </h1>
       </div>
-      
+
       {/* Room Details Section with improved typography */}
       <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-1">
         <div className="flex items-center gap-1 px-4 py-2 sm:px-6 sm:py-3 bg-purple-100 text-purple-700 rounded-full text-sm sm:text-base font-medium shadow-sm border border-purple-200 hover:shadow-md">
@@ -69,9 +70,37 @@ const RoomHeader = ({ roomId, isHost, isParticipant = true, participantCount }) 
             Participant
           </span>
         )}
+
+        {/* Leave Room Button */}
+        {onLeaveRoom && (
+          <button
+            onClick={onLeaveRoom}
+            className="px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-red-50 hover:to-red-100 text-gray-600 hover:text-red-600 rounded-full text-sm sm:text-base font-medium shadow-sm border border-gray-300 hover:border-red-300 transition-all duration-200 flex items-center gap-1.5"
+            title="Leave this room"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span className="hidden sm:inline">Leave Room</span>
+            <span className="sm:hidden">Leave</span>
+          </button>
+        )}
       </div>
     </header>
   );
+};
+
+RoomHeader.propTypes = {
+  /** The room ID/code */
+  roomId: PropTypes.string.isRequired,
+  /** Whether the current user is the host */
+  isHost: PropTypes.bool,
+  /** Whether the current user participates in voting */
+  isParticipant: PropTypes.bool,
+  /** Number of participants in the room */
+  participantCount: PropTypes.number,
+  /** Function to handle leaving the room */
+  onLeaveRoom: PropTypes.func
 };
 
 export default RoomHeader;

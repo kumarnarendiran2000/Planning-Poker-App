@@ -1,12 +1,12 @@
 import React, { useState, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import enhancedToast from '../../utils/enhancedToast.jsx';
 import useRoom from '../../hooks/useRoom';
 import useVoting from '../../hooks/useVoting';
 import RoomService from '../../services/roomService';
 import { countVotes } from '../../utils/statistics';
 import { useAlertModal } from '../modals/AlertModal';
-import { isUserParticipant } from '../../utils/localStorage';
+import { isUserParticipant, clearRoomData } from '../../utils/localStorage';
 import { useFeedback } from '../../hooks/useFeedback';
 
 // Refactored sub-components
@@ -19,6 +19,7 @@ import RoomModals from './RoomModals';
 import RevealCountdown from '../common/RevealCountdown';
 import ResetLoader from '../common/ResetLoader';
 import FeedbackButton from '../common/FeedbackButton';
+import LeaveRoomModal from '../modals/LeaveRoomModal';
 
 /**
  * Room component - the main component for a planning poker room
@@ -26,12 +27,15 @@ import FeedbackButton from '../common/FeedbackButton';
  */
 const Room = () => {
   const { roomId } = useParams();
+  const navigate = useNavigate();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [isTransferring, setIsTransferring] = useState(false);
+
   // Initialize AlertModal
   const { AlertModal, showError, showConfirm, showSuccess } = useAlertModal();
-  
+
   // Use the room hook to manage room state
   const {
     loading,
@@ -49,10 +53,10 @@ const Room = () => {
     updateStory,
     userName
   } = useRoom(roomId, { showError, showConfirm, showSuccess });
-  
+
   // Use feedback hook for feedback operations
   const { getUserRole } = useFeedback();
-  
+
   // Use the voting hook to manage voting
   const {
     vote,
@@ -65,26 +69,26 @@ const Room = () => {
     executeReveal,
     cancelCountdown
   } = useVoting(roomId, sessionId, participants, revealed, isHost, { showError, showConfirm, showSuccess });
-  
+
   // Get vote counts
   const { votesSubmitted, totalParticipants } = countVotes(participants);
-  
+
   // Determine if current user participates in voting (for header badge)
   const currentUser = participants[sessionId];
   const isParticipantFromFirebase = currentUser?.isParticipant !== false;
   const isParticipantFromStorage = isUserParticipant(roomId);
   const isParticipant = currentUser ? isParticipantFromFirebase : isParticipantFromStorage;
-  
+
   // Get user role for feedback context
   const userRole = getUserRole(isHost, isParticipant);
-  
+
   /**
    * Handle delete room button click
    */
   const handleDeleteRoom = () => {
     setShowDeleteModal(true);
   };
-  
+
   /**
    * Confirm room deletion
    */
@@ -94,14 +98,14 @@ const Room = () => {
     setIsDeleting(false);
     setShowDeleteModal(false);
   };
-  
+
   /**
    * Handle name submission from NameModal
    */
   const handleNameSubmit = useCallback((name) => {
     joinRoom(name);
   }, [joinRoom]);
-  
+
   /**
    * Handle removing a participant (host only)
    */
@@ -109,21 +113,21 @@ const Room = () => {
     if (!isHost || !roomId) {
       return;
     }
-    
+
     try {
       // Get host's name for the notification
       const hostName = participants[sessionId]?.name || 'Host';
-      
+
       // Kick the participant (now includes email notifications)
       await RoomService.kickParticipant(roomId, participantId, hostName, participantName);
-      
+
       // NOTE: Success toast shown by useRoomSubscription when it detects participant removal
     } catch (error) {
       console.error('Error removing participant:', error);
       enhancedToast.error(`Failed to remove participant: ${error.message}`);
     }
   }, [isHost, roomId, participants, sessionId]);
-  
+
   /**
    * Handle promoting a participant to host (host only)
    * ALWAYS transfers ownership - only ONE host allowed at a time
@@ -142,22 +146,117 @@ const Room = () => {
     if (!isHost || !roomId) {
       return;
     }
-    
+
     try {
       const hostName = participants[sessionId]?.name || 'Host';
-      
+
       // ALWAYS transfer: Promote target and demote self (atomic operation)
       // This ensures only ONE host exists at any time
       await RoomService.promoteToHost(roomId, participantId, canVote, hostName);
       await RoomService.demoteFromHost(roomId, sessionId, hostName);
-      
+
       // NOTE: Success toast shown by useRoomSubscription when it detects role changes
     } catch (error) {
       console.error('Error updating host role:', error);
       enhancedToast.error(`Failed: ${error.message}`);
     }
   }, [isHost, roomId, participants, sessionId]);
-  
+
+  /**
+   * Handle leave room button click
+   * For hosts/facilitators - show transfer modal
+   * For participants - show confirmation and leave
+   */
+  const handleLeaveRoom = useCallback(() => {
+    if (isHost) {
+      // Host must transfer role first
+      setShowLeaveModal(true);
+    } else {
+      // Regular participant - show confirmation
+      showConfirm({
+        title: '🚪 Leave Room',
+        message: 'Are you sure you want to leave this room?',
+        okText: 'Leave',
+        cancelText: 'Stay',
+        onOk: async () => {
+          try {
+            const loadingToast = enhancedToast.loading('Leaving room...');
+            await RoomService.removeParticipant(roomId, sessionId, userName, 'left');
+            clearRoomData(roomId);
+            enhancedToast.dismiss(loadingToast);
+            enhancedToast.success('Left room successfully');
+            navigate('/');
+          } catch (error) {
+            console.error('Error leaving room:', error);
+            enhancedToast.error('Failed to leave room. Please try again.');
+          }
+        }
+      });
+    }
+  }, [isHost, roomId, sessionId, userName, showConfirm, navigate]);
+
+  /**
+   * Handle transfer and leave (for hosts/facilitators)
+   * @param {string|null} participantId - ID of participant to transfer to (null if no participants)
+   * @param {string|null} participantName - Name of participant to transfer to
+   * @param {boolean} canVote - Whether new host can vote
+   */
+  const handleTransferAndLeave = useCallback(async (participantId, participantName, canVote) => {
+    setIsTransferring(true);
+
+    try {
+      const hostName = participants[sessionId]?.name || 'Host';
+
+      if (participantId) {
+        // Transfer role to selected participant
+        await RoomService.promoteToHost(roomId, participantId, canVote, hostName);
+        await RoomService.demoteFromHost(roomId, sessionId, hostName);
+
+        // Show success for transfer
+        enhancedToast.success(`Transferred host role to ${participantName}`);
+      }
+
+      // Close modal and show leave confirmation
+      setShowLeaveModal(false);
+      setIsTransferring(false);
+
+      // Show final confirmation to leave
+      showConfirm({
+        title: '🚪 Leave Room',
+        message: participantId
+          ? `Role transferred to ${participantName}. Are you sure you want to leave now?`
+          : 'No other participants. The room will be deleted. Are you sure?',
+        okText: 'Leave',
+        cancelText: 'Stay',
+        onOk: async () => {
+          try {
+            const loadingToast = enhancedToast.loading('Leaving room...');
+
+            if (!participantId) {
+              // No other participants - delete the room
+              await RoomService.deleteRoom(roomId, hostName);
+            } else {
+              // Just remove self as participant
+              await RoomService.removeParticipant(roomId, sessionId, hostName, 'left');
+            }
+
+            clearRoomData(roomId);
+            enhancedToast.dismiss(loadingToast);
+            enhancedToast.success('Left room successfully');
+            navigate('/');
+          } catch (error) {
+            console.error('Error leaving room:', error);
+            enhancedToast.error('Failed to leave room. Please try again.');
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error transferring role:', error);
+      enhancedToast.error('Failed to transfer role. Please try again.');
+      setIsTransferring(false);
+    }
+  }, [roomId, sessionId, participants, showConfirm, navigate]);
+
   // Show loading state
   if (loading) {
     return <RoomLoadingState />;
@@ -173,15 +272,15 @@ const Room = () => {
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex flex-col">
       <div className="flex-1 container mx-auto px-3 sm:px-4 md:px-6 xl:px-8 2xl:px-12 py-3 sm:py-4 md:py-6 min-h-screen max-w-none">
         <div className="bg-white/90 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-2xl p-3 sm:p-4 md:p-6 lg:p-8 xl:p-10 2xl:p-12 min-h-[calc(100vh-3rem)] sm:min-h-[calc(100vh-4rem)] flex flex-col">
-          
+
           {/* Room Header */}
           <div className="flex-shrink-0 mb-3 sm:mb-4 md:mb-6">
-            <RoomHeader roomId={roomId} isHost={isHost} isParticipant={isParticipant} participantCount={totalParticipants} />
+            <RoomHeader roomId={roomId} isHost={isHost} isParticipant={isParticipant} participantCount={totalParticipants} onLeaveRoom={handleLeaveRoom} />
           </div>
 
           {/* Story Input */}
           <div className="flex-shrink-0 mb-3 sm:mb-4 md:mb-6">
-            <StoryInput 
+            <StoryInput
               storyName={story}
               isHost={isHost}
               onStoryUpdate={updateStory}
@@ -192,29 +291,29 @@ const Room = () => {
           {/* Main Content */}
           <div className="flex-1 min-h-[500px] sm:min-h-[600px]">
             <RoomMainContent
-            participants={participants}
-            sessionId={sessionId}
-            roomId={roomId}
-            revealed={revealed}
-            isHost={isHost}
-            onRemoveParticipant={handleRemoveParticipant}
-            onPromoteToHost={handlePromoteToHost}
-            showConfirm={showConfirm}
-            stats={stats}
-            vote={vote}
-            votesSubmitted={votesSubmitted}
-            totalParticipants={totalParticipants}
-            onVote={handleVote}
-            onSkip={handleSkip}
-            onUnskip={handleUnskip}
-            onReveal={handleReveal}
-            onReset={handleReset}
-            onDelete={handleDeleteRoom}
-          />
+              participants={participants}
+              sessionId={sessionId}
+              roomId={roomId}
+              revealed={revealed}
+              isHost={isHost}
+              onRemoveParticipant={handleRemoveParticipant}
+              onPromoteToHost={handlePromoteToHost}
+              showConfirm={showConfirm}
+              stats={stats}
+              vote={vote}
+              votesSubmitted={votesSubmitted}
+              totalParticipants={totalParticipants}
+              onVote={handleVote}
+              onSkip={handleSkip}
+              onUnskip={handleUnskip}
+              onReveal={handleReveal}
+              onReset={handleReset}
+              onDelete={handleDeleteRoom}
+            />
           </div>
         </div>
       </div>
-      
+
       {/* All Modals */}
       <RoomModals
         showNameModal={showNameModal}
@@ -227,7 +326,17 @@ const Room = () => {
         isDeleting={isDeleting}
         AlertModal={AlertModal}
       />
-      
+
+      {/* Leave Room Modal (for hosts/facilitators) */}
+      <LeaveRoomModal
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+        participants={participants}
+        sessionId={sessionId}
+        onTransferAndLeave={handleTransferAndLeave}
+        isTransferring={isTransferring}
+      />
+
       {/* Reveal Countdown */}
       <RevealCountdown
         isVisible={!!countdown?.active}
@@ -235,12 +344,12 @@ const Room = () => {
         onCancel={cancelCountdown}
         showCancelButton={isHost}
       />
-      
+
       {/* Reset Loader */}
       <ResetLoader
         isVisible={!!resetState?.active}
       />
-      
+
       {/* Feedback Button - Available for all users */}
       <FeedbackButton
         roomId={roomId}

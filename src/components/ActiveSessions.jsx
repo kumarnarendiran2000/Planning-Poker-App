@@ -18,25 +18,25 @@ const ActiveSessions = ({ onSessionDeleted }) => {
       const activeSessions = StorageUtils.getActiveSessions();
       setSessions(activeSessions);
     };
-    
+
     // Load initially
     loadSessions();
-    
+
     // Listen for custom event when localStorage sessions change
     const handleSessionsChange = () => {
       loadSessions();
     };
-    
+
     // Listen for storage events (when localStorage changes in other tabs/windows)
     const handleStorageChange = (e) => {
       if (e.key && e.key.startsWith('poker_')) {
         loadSessions();
       }
     };
-    
+
     window.addEventListener('pokersessionschanged', handleSessionsChange);
     window.addEventListener('storage', handleStorageChange);
-    
+
     return () => {
       window.removeEventListener('pokersessionschanged', handleSessionsChange);
       window.removeEventListener('storage', handleStorageChange);
@@ -54,51 +54,53 @@ const ActiveSessions = ({ onSessionDeleted }) => {
    * Handle deleting a session
    */
   const handleDeleteSession = async (session) => {
+    // For hosts/facilitators, warn them to transfer role first
+    if (session.isHost) {
+      const confirmLeave = window.confirm(
+        `⚠️ You are the host of room ${session.roomId}.\n\n` +
+        `To leave this room, you should first transfer your host role to another participant.\n\n` +
+        `Click OK to enter the room and transfer your role, or Cancel to stay.`
+      );
+
+      if (confirmLeave) {
+        navigate(`/room/${session.roomId}`);
+      }
+      return;
+    }
+
     try {
       // Show loading toast
       const loadingToast = enhancedToast.loading('Leaving room...');
-      
+
       // First try to remove participant from Firebase if room still exists
       try {
         const roomExists = await RoomService.checkRoomExists(session.roomId);
         if (roomExists && session.sessionId) {
           // Remove participant with email notification
           await RoomService.removeParticipant(session.roomId, session.sessionId, session.userName, 'left');
-          
-          // If the leaving participant is the host, delete the entire room
-          if (session.isHost) {
-            try {
-              // Mark that the host is deleting the room
-              StorageUtils.markRoomDeleting(session.roomId);
-              
-              await RoomService.deleteRoom(session.roomId, session.userName);
-            } catch (deleteError) {
-              // Failed to delete room after host left
-            }
-          } else {
-            // If not the host, check if the room is now empty and should be deleted
-            try {
-              const wasDeleted = await RoomService.deleteRoomIfEmpty(session.roomId);
-            } catch (deleteError) {
-              // Failed to check/delete empty room
-            }
+
+          // Check if the room is now empty and should be deleted
+          try {
+            await RoomService.deleteRoomIfEmpty(session.roomId);
+          } catch (deleteError) {
+            // Failed to check/delete empty room
           }
         }
       } catch (firebaseError) {
         // If Firebase removal fails, still continue with localStorage cleanup
       }
-      
+
       // Clear the room data from localStorage
       StorageUtils.clearRoomData(session.roomId);
-      
+
       // Update the sessions list
       const updatedSessions = sessions.filter(s => s.roomId !== session.roomId);
       setSessions(updatedSessions);
-      
+
       // Dismiss loading toast and show success message
       enhancedToast.dismiss(loadingToast);
       enhancedToast.success(`Left room ${session.roomId} successfully`);
-      
+
       // Call the callback if provided
       if (onSessionDeleted) {
         onSessionDeleted(session.roomId);
@@ -123,8 +125,8 @@ const ActiveSessions = ({ onSessionDeleted }) => {
   return (
     <div className="space-y-2.5">
       {sessions.map((session) => (
-        <div 
-          key={session.roomId} 
+        <div
+          key={session.roomId}
           className="bg-gradient-to-br from-gray-50 to-white rounded-lg border border-gray-200 p-3 shadow-sm hover:shadow-md hover:border-purple-300 transition-all duration-200 group"
         >
           <div className="flex items-start justify-between mb-2">
@@ -137,7 +139,7 @@ const ActiveSessions = ({ onSessionDeleted }) => {
               let role = null;
               let badgeStyle = '';
               let icon = '';
-              
+
               if (session.isHost && session.isParticipant) {
                 role = 'Host';
                 icon = '👑';
@@ -151,7 +153,7 @@ const ActiveSessions = ({ onSessionDeleted }) => {
                 icon = '👤';
                 badgeStyle = 'bg-gradient-to-r from-purple-100 to-violet-100 text-purple-700 border border-purple-200';
               }
-              
+
               return (
                 <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${badgeStyle}`}>
                   <span>{icon}</span>
@@ -160,12 +162,12 @@ const ActiveSessions = ({ onSessionDeleted }) => {
               );
             })()}
           </div>
-          
+
           <div className="mb-2">
             <div className="text-xs font-medium text-gray-500 mb-0.5">Name</div>
             <div className="text-sm font-medium text-gray-800 truncate">{session.userName}</div>
           </div>
-          
+
           <div className="flex gap-2">
             <button
               onClick={() => handleJoinSession(session)}
