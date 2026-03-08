@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import CreateRoom from './components/CreateRoom'
 import JoinRoom from './components/JoinRoom'
@@ -7,42 +7,12 @@ import ActiveSessions from './components/ActiveSessions'
 import Room from './components/Room/index'
 import FeedbackAnalytics from './components/admin/FeedbackAnalytics'
 import RoomHistoryPage from './pages/RoomHistoryPage'
+import NotFoundPage from './pages/NotFoundPage'
 import AboutModal from './components/modals/AboutModal'
 import FeedbackButton from './components/common/FeedbackButton'
 import { runCleanupIfNeeded } from './services/cleanupService'
 import { useActiveSessionMonitor } from './hooks/useActiveSessionMonitor'
 
-// Navigation Header Component (only for analytics page)
-function NavigationHeader() {
-  const location = useLocation();
-  const isAnalyticsPage = location.pathname === '/admin/feedback';
-  
-  // Only show header on analytics page
-  if (!isAnalyticsPage) return null;
-  
-  return (
-    <header className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-b border-gray-200 shadow-sm z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center gap-2 text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
-            <span className="text-2xl">🃏</span>
-            <span>Planning Poker</span>
-          </Link>
-          
-          <nav className="flex items-center gap-4">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white text-sm font-medium rounded-full shadow-md hover:shadow-lg transition-colors duration-200"
-            >
-              <span>🏠</span>
-              <span>Back to Home</span>
-            </Link>
-          </nav>
-        </div>
-      </div>
-    </header>
-  );
-}
 
 function Home() {
   // State to force re-render when sessions change
@@ -259,30 +229,67 @@ function Home() {
 // Feedback Analytics Page Component
 function FeedbackAnalyticsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 pt-20 py-6">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">📊 Feedback Analytics Dashboard</h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex flex-col">
+      {/* Header — same as Home */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-md">
+                <span className="text-2xl">🃏</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-gray-900 uppercase" style={{ letterSpacing: '0.05em' }}>
+                Planning Poker
+              </h1>
+            </div>
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-sm font-medium rounded-full shadow-md hover:shadow-lg transition-colors duration-200"
+            >
+              <span>🏠</span>
+              <span className="hidden sm:inline">Back to Home</span>
+              <span className="sm:hidden">Home</span>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-grow py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">📊 Feedback Analytics Dashboard</h2>
+            <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
               Comprehensive insights into user feedback, suggestions, and improvement requests from your Planning Poker sessions.
             </p>
           </div>
-        </div>
-        
-        {/* Analytics Component */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-          <FeedbackAnalytics />
-        </div>
-        
-        {/* Footer Info */}
-        <div className="mt-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-lg text-sm text-gray-600 shadow-sm border border-gray-200">
-            <span>🔄</span>
-            <span>Data updates in real-time • Last updated: {new Date().toLocaleString()}</span>
+
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+            <FeedbackAnalytics />
+          </div>
+
+          <div className="mt-8 text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-lg text-sm text-gray-600 shadow-sm border border-gray-200">
+              <span>🔄</span>
+              <span>Data updates in real-time • Last updated: {new Date().toLocaleString()}</span>
+            </div>
           </div>
         </div>
-      </div>
+      </main>
+
+      {/* Footer — same as Home */}
+      <footer className="bg-white/80 backdrop-blur-md border-t border-gray-200 shadow-sm mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p className="text-sm text-gray-600">
+              © 2026 Planning Poker • Real-time Agile Estimation
+            </p>
+            <div className="flex items-center gap-4 text-sm text-gray-500">
+              <span>Made with ❤️ for Agile Teams</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
@@ -290,14 +297,13 @@ function FeedbackAnalyticsPage() {
 function App() {
   return (
     <BrowserRouter>
-      <NavigationHeader />
-      <Toaster 
-        position="top-center" 
+      <Toaster
+        position="top-center"
         reverseOrder={false}
         gutter={8}
         containerClassName=""
         containerStyle={{
-          top: 20, // Reset to normal since header only on analytics
+          top: 20,
           left: 20,
           bottom: 20,
           right: 20,
@@ -319,6 +325,7 @@ function App() {
         <Route path="/room/:roomId" element={<Room />} />
         <Route path="/room/:roomId/history" element={<RoomHistoryPage />} />
         <Route path="/admin/feedback" element={<FeedbackAnalyticsPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   )

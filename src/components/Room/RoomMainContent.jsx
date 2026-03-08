@@ -26,7 +26,8 @@ const RoomMainContent = ({
   onUnskip,
   onReveal,
   onReset,
-  onDelete
+  onDelete,
+  onLeaveRoom,
 }) => {
   // Check if current user participates in voting
   // Use localStorage first (immediate), then Firebase data (when loaded)
@@ -69,6 +70,7 @@ const RoomMainContent = ({
         {/* Voting Area - Takes remaining space */}
         <div className="flex-1 min-h-[250px] sm:min-h-[300px] xl:min-h-[360px] 2xl:min-h-[420px]">
           <RoomVotingArea
+            roomId={roomId}
             vote={vote}
             revealed={revealed}
             onVote={onVote}
@@ -79,6 +81,7 @@ const RoomMainContent = ({
             onReveal={onReveal}
             onReset={onReset}
             onDelete={onDelete}
+            onLeaveRoom={onLeaveRoom}
           />
         </div>
       </div>

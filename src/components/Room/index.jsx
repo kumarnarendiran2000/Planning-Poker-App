@@ -259,7 +259,7 @@ const Room = () => {
 
           {/* Room Header */}
           <div className="flex-shrink-0 mb-3 sm:mb-4 md:mb-6">
-            <RoomHeader roomId={roomId} isHost={isHost} isParticipant={isParticipant} participantCount={totalParticipants} onLeaveRoom={handleLeaveRoom} />
+            <RoomHeader roomId={roomId} isHost={isHost} isParticipant={isParticipant} participantCount={totalParticipants} />
           </div>
 
           {/* Story Input */}
@@ -293,6 +293,7 @@ const Room = () => {
               onReveal={handleReveal}
               onReset={handleReset}
               onDelete={handleDeleteRoom}
+              onLeaveRoom={handleLeaveRoom}
             />
           </div>
         </div>

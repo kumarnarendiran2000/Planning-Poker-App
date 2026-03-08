@@ -12,7 +12,8 @@ const FeedbackAnalytics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [stats, setStats] = useState(null);
-  
+  const [filterType, setFilterType] = useState('ALL');
+
   const { getFeedbackStats, FEEDBACK_TYPES } = useFeedback();
 
   // Helper function to get feedback type display name
@@ -154,87 +155,114 @@ const FeedbackAnalytics = () => {
         </div>
       )}
 
+      {/* Filter by Type */}
+      {feedbacks.length > 0 && (() => {
+        const filterOptions = [
+          { key: 'ALL', label: 'All', emoji: '🗂️', activeClass: 'bg-gray-800 text-white border-gray-800', inactiveClass: 'bg-white text-gray-700 border-gray-300 hover:border-gray-500 hover:bg-gray-50' },
+          { key: FEEDBACK_TYPES.BUG, label: 'Bug Report', emoji: '🐛', activeClass: 'bg-red-600 text-white border-red-600', inactiveClass: 'bg-white text-red-700 border-red-200 hover:border-red-400 hover:bg-red-50' },
+          { key: FEEDBACK_TYPES.FEATURE, label: 'Feature Request', emoji: '💡', activeClass: 'bg-indigo-600 text-white border-indigo-600', inactiveClass: 'bg-white text-indigo-700 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50' },
+          { key: FEEDBACK_TYPES.GENERAL, label: 'General', emoji: '💬', activeClass: 'bg-blue-600 text-white border-blue-600', inactiveClass: 'bg-white text-blue-700 border-blue-200 hover:border-blue-400 hover:bg-blue-50' },
+          { key: FEEDBACK_TYPES.UI_UX, label: 'UI / UX', emoji: '🎨', activeClass: 'bg-purple-600 text-white border-purple-600', inactiveClass: 'bg-white text-purple-700 border-purple-200 hover:border-purple-400 hover:bg-purple-50' },
+          { key: FEEDBACK_TYPES.PERFORMANCE, label: 'Performance', emoji: '⚡', activeClass: 'bg-orange-500 text-white border-orange-500', inactiveClass: 'bg-white text-orange-700 border-orange-200 hover:border-orange-400 hover:bg-orange-50' },
+        ];
+        return (
+          <div className="mb-6">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Filter by Type</p>
+            <div className="flex flex-wrap gap-2">
+              {filterOptions.map(({ key, label, emoji, activeClass, inactiveClass }) => {
+                const count = key === 'ALL' ? feedbacks.length : feedbacks.filter(f => f.type === key).length;
+                const isActive = filterType === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setFilterType(key)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all duration-150 shadow-sm ${isActive ? activeClass : inactiveClass}`}
+                  >
+                    <span>{emoji}</span>
+                    <span>{label}</span>
+                    <span className={`ml-0.5 px-1.5 py-0.5 rounded-full text-xs font-bold ${isActive ? 'bg-white/25 text-inherit' : 'bg-gray-100 text-gray-600'}`}>{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Feedback List */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">📝</span>
-              <h2 className="text-xl font-semibold text-gray-900">Recent Feedback</h2>
+      {(() => {
+        const visible = filterType === 'ALL' ? feedbacks : feedbacks.filter(f => f.type === filterType);
+        return (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">📝</span>
+                  <h2 className="text-xl font-semibold text-gray-900">Recent Feedback</h2>
+                </div>
+                <div className="text-sm text-gray-500">
+                  Showing {visible.length} {visible.length !== feedbacks.length && `of ${feedbacks.length} `}entries
+                </div>
+              </div>
             </div>
-            <div className="text-sm text-gray-500">
-              Showing {feedbacks.length} entries
-            </div>
+
+            {visible.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                No feedback of this type yet.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feedback</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {visible.map((feedback) => (
+                      <tr key={feedback.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {getFeedbackTypeDisplay(feedback.type)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-900 max-w-xs truncate">{feedback.feedback}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <div>
+                            {feedback.userDetails?.name || 'Anonymous'}
+                            {feedback.userDetails?.email && (
+                              <div className="text-xs text-gray-500">{feedback.userDetails.email}</div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {feedback.rating ? (
+                            <div className="flex items-center">
+                              <span className="text-yellow-400">★</span>
+                              <span className="ml-1">{feedback.rating}</span>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">No rating</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(feedback.createdAt)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
-        </div>
-        
-        {feedbacks.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            No feedback submitted yet.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Feedback
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Rating
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {feedbacks.map((feedback) => (
-                  <tr key={feedback.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {getFeedbackTypeDisplay(feedback.type)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 max-w-xs truncate">
-                        {feedback.feedback}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div>
-                        {feedback.userDetails?.name || 'Anonymous'}
-                        {feedback.userDetails?.email && (
-                          <div className="text-xs text-gray-500">{feedback.userDetails.email}</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {feedback.rating ? (
-                        <div className="flex items-center">
-                          <span className="text-yellow-400">★</span>
-                          <span className="ml-1">{feedback.rating}</span>
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">No rating</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(feedback.createdAt)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+        );
+      })()}
     </div>
   );
 };

@@ -53,20 +53,10 @@ const useVoting = (roomId, sessionId, participants, revealed, isHost, story, ale
         });
         return;
       }
-      
-      // Prevent voting if already skipped
-      if (vote === 'SKIP') {
-        showError({
-          title: 'Already Skipped',
-          message: 'You have skipped this round. Wait for the host to reset the votes.',
-          okText: 'OK'
-        });
-        return;
-      }
-      
-      // Submit to Firebase first, let Firebase listener update local state
-      await RoomService.submitVote(roomId, sessionId, value);
-      // Remove: setVote(value); - let Firebase listener handle this
+
+      // Clicking the already-selected card toggles it off (unvote)
+      const newValue = vote === value ? null : value;
+      await RoomService.submitVote(roomId, sessionId, newValue);
     } catch (error) {
       showError({
         title: 'Error',

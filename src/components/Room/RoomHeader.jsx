@@ -1,43 +1,33 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
 
 /**
- * Room header component containing title and room information
- * Displays the room title, room ID, host badge, participant count, leave button, and history button
+ * Room header — title, room code (with copy), and role badge.
+ * Leave Room and History buttons have moved into the voting area.
  */
-const RoomHeader = ({ roomId, isHost, isParticipant = true, participantCount, onLeaveRoom }) => {
+const RoomHeader = ({ roomId, isHost, isParticipant = true, participantCount }) => {
   const [copied, setCopied] = useState(false);
-  const navigate = useNavigate();
 
   const handleCopyRoomCode = async () => {
     try {
       await navigator.clipboard.writeText(roomId);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = roomId;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API unavailable — silently ignore
     }
   };
 
   return (
     <header className="pt-1 pb-2 sm:pb-3">
-      {/* Ultra-compact title */}
+      {/* Title */}
       <div className="w-full text-center overflow-visible py-0.5">
         <h1 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 bg-clip-text text-transparent mb-1 tracking-tight leading-relaxed">
           Planning Poker
         </h1>
       </div>
 
-      {/* Room Details Section */}
+      {/* Room code + role badges */}
       <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-1">
         <div className="flex items-center gap-1 px-4 py-2 sm:px-6 sm:py-3 bg-purple-100 text-purple-700 rounded-full text-sm sm:text-base font-medium shadow-sm border border-purple-200 hover:shadow-md">
           <span>Room: {roomId}</span>
@@ -57,6 +47,7 @@ const RoomHeader = ({ roomId, isHost, isParticipant = true, participantCount, on
             )}
           </button>
         </div>
+
         {isHost && isParticipant && (
           <span className="px-4 py-2 sm:px-6 sm:py-3 bg-green-100 text-green-700 rounded-full text-sm sm:text-base font-medium shadow-sm border border-green-200 hover:shadow-md">
             Host Participant
@@ -72,49 +63,16 @@ const RoomHeader = ({ roomId, isHost, isParticipant = true, participantCount, on
             Participant
           </span>
         )}
-
-        {/* History Button */}
-        <button
-          onClick={() => navigate(`/room/${roomId}/history`)}
-          className="px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white rounded-full text-sm sm:text-base font-medium shadow-sm hover:shadow-md border border-amber-300 transition-all duration-200 flex items-center gap-1.5"
-          title="View round history"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span className="hidden sm:inline">History</span>
-        </button>
-
-        {/* Leave Room Button — red */}
-        {onLeaveRoom && (
-          <button
-            onClick={onLeaveRoom}
-            className="px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-full text-sm sm:text-base font-medium shadow-sm hover:shadow-md border border-red-400 transition-all duration-200 flex items-center gap-1.5"
-            title="Leave this room"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            <span className="hidden sm:inline">Leave Room</span>
-            <span className="sm:hidden">Leave</span>
-          </button>
-        )}
       </div>
     </header>
   );
 };
 
 RoomHeader.propTypes = {
-  /** The room ID/code */
   roomId: PropTypes.string.isRequired,
-  /** Whether the current user is the host */
   isHost: PropTypes.bool,
-  /** Whether the current user participates in voting */
   isParticipant: PropTypes.bool,
-  /** Number of participants in the room */
   participantCount: PropTypes.number,
-  /** Function to handle leaving the room */
-  onLeaveRoom: PropTypes.func
 };
 
 export default RoomHeader;

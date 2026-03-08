@@ -331,11 +331,14 @@ const ParticipantList = ({
         
         {/* Status Filter Buttons */}
         <div className="mb-2 sm:mb-3 flex-shrink-0">
-          <div className="text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1">
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-            </svg>
-            Filter by Status
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="text-xs font-medium text-gray-600 flex items-center gap-1">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+              Filter by Status
+            </div>
+            <span className="text-[10px] text-indigo-500 font-semibold tracking-wide uppercase">↑ tap to filter</span>
           </div>
           <div className="flex flex-wrap gap-1 sm:gap-2">
             {['all', 'voted', 'not-voted', 'skipped'].map((filter) => (
