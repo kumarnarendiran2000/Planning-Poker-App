@@ -47,7 +47,10 @@ export const clearRoomData = (roomId) => {
   removeRoomItem('isHost', roomId);
   removeRoomItem('isParticipant', roomId);
   removeRoomItem('deletingRoom', roomId);
-  removeRoomItem('leavingRoom', roomId);
+  // leavingRoom marker is intentionally NOT removed here.
+  // It must persist until the Firebase subscription callback fires so it can
+  // suppress the "removed by host" toast on voluntary leave. The subscription
+  // cleanup and the removal detection block clear it at the right time.
   removeRoomItem('roomCode', roomId);
   
   // Notify that localStorage has changed

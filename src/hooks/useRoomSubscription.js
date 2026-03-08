@@ -115,6 +115,8 @@ export const useRoomSubscription = (roomId, state, navigation) => {
             // Suppress if user left voluntarily (Leave Room flow sets this marker)
             const isLeavingVoluntarily = StorageUtils.getRoomItem('leavingRoom', roomId) === roomId;
             if (isLeavingVoluntarily) {
+              // Clear the marker now — we've consumed it
+              StorageUtils.removeRoomItem('leavingRoom', roomId);
               return prevParticipants; // Leave flow handles navigation itself
             }
 
@@ -235,7 +237,9 @@ export const useRoomSubscription = (roomId, state, navigation) => {
         } else if (roleChanges.currentUserDemoted) {
           // Suppress demotion toast if the user is in the process of leaving
           const isLeavingVoluntarily = StorageUtils.getRoomItem('leavingRoom', roomId) === roomId;
-          if (!isLeavingVoluntarily && shouldShowToast('demoted')) {
+          if (isLeavingVoluntarily) {
+            // Don't clear the marker here — the removal event fires next and needs it
+          } else if (shouldShowToast('demoted')) {
             enhancedToast.success('Role transferred successfully! The room has been reset.');
           }
         } else if (roleChanges.otherPromoted || roleChanges.otherDemoted) {
@@ -366,8 +370,9 @@ export const useRoomSubscription = (roomId, state, navigation) => {
         window.roomSubscriptionTimers.clear();
       }
       
-      // Remove the deleting marker
+      // Remove flow control markers
       StorageUtils.removeRoomItem('deletingRoom', roomId);
+      StorageUtils.removeRoomItem('leavingRoom', roomId);
       
       // If this was the host, check if the room is now empty and should be deleted
       // (Don't force delete on browser close - host might want to rejoin)

@@ -160,9 +160,12 @@ const useVoting = (roomId, sessionId, participants, revealed, isHost, story, ale
     try {
       await RoomService.revealVotes(roomId);
       await RoomService.stopRevealCountdown(roomId);
-      // Save round to Firestore history (fire-and-forget)
-      const currentStats = calculateStatistics(participants, true);
-      historyService.saveRound(roomId, { story, participants, stats: currentStats }).catch(console.error);
+      // Only the host saves history — all participants call executeReveal but
+      // only one should write to Firestore to avoid duplicate rounds.
+      if (isHost) {
+        const currentStats = calculateStatistics(participants, true);
+        historyService.saveRound(roomId, { story, participants, stats: currentStats }).catch(console.error);
+      }
     } catch (error) {
       console.error('Error revealing votes:', error);
       showError({

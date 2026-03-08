@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 /**
@@ -8,27 +8,48 @@ import PropTypes from 'prop-types';
 const RevealCountdown = ({ isVisible, onComplete, onCancel, showCancelButton = false }) => {
   const [count, setCount] = useState(3);
 
+  // Keep a stable ref to onComplete so the countdown effect doesn't depend on its
+  // identity. Without this, any parent re-render that produces a new onComplete
+  // reference would restart the interval mid-countdown → double-reveal saves.
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
   useEffect(() => {
     if (!isVisible) {
       setCount(3);
       return;
     }
 
+    // One-shot guard: even if the timer fires more than once due to React
+    // StrictMode or stale closures, only the first completion is acted on.
+    let completed = false;
+    let completionTimer = null;
+
+    const fireComplete = () => {
+      if (completed) return;
+      completed = true;
+      completionTimer = setTimeout(() => onCompleteRef.current(), 500);
+    };
+
     const timer = setInterval(() => {
       setCount((prevCount) => {
         if (prevCount <= 1) {
           clearInterval(timer);
-          setTimeout(() => {
-            onComplete();
-          }, 500); // Small delay after "1" before revealing
+          fireComplete();
           return 0;
         }
         return prevCount - 1;
       });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [isVisible, onComplete]);
+    return () => {
+      completed = true;
+      clearInterval(timer);
+      clearTimeout(completionTimer);
+    };
+  }, [isVisible]); // onComplete intentionally excluded — handled via ref
 
   if (!isVisible) return null;
 
@@ -40,7 +61,6 @@ const RevealCountdown = ({ isVisible, onComplete, onCancel, showCancelButton = f
             {/* Countdown Display */}
             <div className="flex justify-center mb-6">
               <div className="relative">
-                {/* Main countdown number with simple background */}
                 <div className="w-24 h-24 sm:w-28 sm:h-28 bg-blue-600 rounded-full flex items-center justify-center shadow-md">
                   <span className="text-4xl sm:text-5xl font-bold text-white">
                     {count}
@@ -48,8 +68,7 @@ const RevealCountdown = ({ isVisible, onComplete, onCancel, showCancelButton = f
                 </div>
               </div>
             </div>
-            
-            {/* Revealing message */}
+
             <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
               Revealing Votes
             </h3>
@@ -59,11 +78,10 @@ const RevealCountdown = ({ isVisible, onComplete, onCancel, showCancelButton = f
           </>
         ) : (
           <>
-            {/* Loading state when revealing */}
             <div className="flex justify-center mb-4">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
-            
+
             <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
               Revealing Votes
             </h3>
