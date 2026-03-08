@@ -302,35 +302,32 @@ class RoomService {
         // Update room status to signal deletion to all clients
         await this.updateRoomStatus(roomId, 'deleting');
         
-        // Send email notifications before deletion (non-blocking)
-        (() => {
-          const sendNotifications = async () => {
-            try {
-              const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
-              
-              const deletionData = {
-                roomCode: roomId,
-                deletedBy,
-                deletedAt: Date.now(),
-                participantCount: Object.keys(roomData.participants).length,
-                roomAge: roomData.createdAt ? Math.round((Date.now() - roomData.createdAt) / (1000 * 60 * 60)) : 'Unknown',
-                deletionType: deletedBy.includes('System Cleanup') ? 'automatic' : 'manual',
-                roomCreatedAt: roomData.createdAt || Date.now()
-              };
-              
-              // Always notify admin
-              await firestoreEmailService.notifyRoomDeleted(deletionData, 'kumarnarendiran2000@gmail.com', true);
-              
-              // Notify room creator if they have email notifications enabled
-              if (roomData.emailNotifications?.enabled && roomData.emailNotifications?.userEmail) {
-                await firestoreEmailService.notifyRoomDeleted(deletionData, roomData.emailNotifications.userEmail, false);
-              }
-            } catch (emailError) {
-              // Email notification failed - continue with room deletion
-            }
-          };
-          sendNotifications(); // Fire and forget
-        })();
+        // EMAIL NOTIFICATIONS DISABLED
+        // (() => {
+        //   const sendNotifications = async () => {
+        //     try {
+        //       const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
+        //       const deletionData = {
+        //         roomCode: roomId,
+        //         deletedBy,
+        //         deletedAt: Date.now(),
+        //         participantCount: Object.keys(roomData.participants).length,
+        //         roomAge: roomData.createdAt ? Math.round((Date.now() - roomData.createdAt) / (1000 * 60 * 60)) : 'Unknown',
+        //         deletionType: deletedBy.includes('System Cleanup') ? 'automatic' : 'manual',
+        //         roomCreatedAt: roomData.createdAt || Date.now()
+        //       };
+        //       // Always notify admin
+        //       await firestoreEmailService.notifyRoomDeleted(deletionData, 'kumarnarendiran2000@gmail.com', true);
+        //       // Notify room creator if they have email notifications enabled
+        //       if (roomData.emailNotifications?.enabled && roomData.emailNotifications?.userEmail) {
+        //         await firestoreEmailService.notifyRoomDeleted(deletionData, roomData.emailNotifications.userEmail, false);
+        //       }
+        //     } catch (emailError) {
+        //       // Email notification failed - continue with room deletion
+        //     }
+        //   };
+        //   sendNotifications(); // Fire and forget
+        // })();
         
         // Explicitly clean up each participant to ensure they're removed
         // Firebase's real-time nature will notify clients immediately
@@ -448,74 +445,8 @@ class RoomService {
    * @returns {Promise} Promise resolving when participant is added
    */
   static async addParticipant(roomId, participantId, participantData) {
-    try {
-      // FIRST: Get room data to fetch email configuration BEFORE adding participant
-      // This ensures we have the email config even if there's timing issues
-      let roomEmailConfig = null;
-      try {
-        const roomRef = this.getRoomRef(roomId);
-        const roomSnapshot = await get(roomRef);
-        if (roomSnapshot.exists()) {
-          const roomData = roomSnapshot.val();
-          roomEmailConfig = roomData.emailNotifications || null;
-        }
-      } catch (fetchError) {
-        console.error('⚠️ Warning: Could not fetch room email config before adding participant:', fetchError);
-        // Continue with participant addition even if email config fetch fails
-      }
-      
-      // SECOND: Add participant to Firebase
-      const participantRef = this.getParticipantRef(roomId, participantId);
-      await set(participantRef, participantData);
-      
-      // THIRD: Send email notifications (non-blocking but more robust)
-      if (participantData.name) {
-        // Use immediately invoked async function for fire-and-forget pattern
-        (async () => {
-          try {
-            const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
-            
-            const notificationData = {
-              roomCode: roomId,
-              participantName: participantData.name,
-              participantRole: 'Participant',
-              joinedAt: participantData.joinedAt || Date.now()
-            };
-            
-            console.log(`📧 Sending participant joined notifications for ${participantData.name} in room ${roomId}`);
-            
-            // Always notify admin
-            try {
-              await firestoreEmailService.notifyParticipantJoined(notificationData, 'kumarnarendiran2000@gmail.com', true);
-              console.log('✅ Admin notification sent successfully');
-            } catch (adminEmailError) {
-              console.error('❌ Failed to send admin notification:', adminEmailError);
-            }
-            
-            // Notify room creator if email notifications are enabled
-            if (roomEmailConfig?.enabled && roomEmailConfig?.userEmail) {
-              try {
-                await firestoreEmailService.notifyParticipantJoined(notificationData, roomEmailConfig.userEmail, false);
-                console.log(`✅ User notification sent to ${roomEmailConfig.userEmail}`);
-              } catch (userEmailError) {
-                console.error('❌ Failed to send user notification:', userEmailError);
-              }
-            } else {
-              console.log('ℹ️ User email notifications not enabled or no email configured');
-            }
-          } catch (emailError) {
-            console.error('❌ Email notification process failed:', emailError);
-          }
-        })(); // Immediately invoke but don't await (fire-and-forget)
-      } else {
-        console.warn('⚠️ No participant name provided, skipping email notifications');
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Error adding participant:', error);
-      throw error;
-    }
+    // Email notifications disabled — delegates to addParticipantWithoutEmail
+    return this.addParticipantWithoutEmail(roomId, participantId, participantData);
   }
   
   /**
@@ -545,54 +476,36 @@ class RoomService {
    * @param {Object} participantData - The participant data
    * @returns {Promise} Promise resolving when emails are sent
    */
-  static async sendParticipantJoinedEmail(roomId, participantData) {
-    try {
-      // Get room email configuration
-      const roomRef = this.getRoomRef(roomId);
-      const roomSnapshot = await get(roomRef);
-      let roomEmailConfig = null;
-      
-      if (roomSnapshot.exists()) {
-        const roomData = roomSnapshot.val();
-        roomEmailConfig = roomData.emailNotifications || null;
-      }
-      
-      const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
-      
-      const notificationData = {
-        roomCode: roomId,
-        participantName: participantData.name,
-        participantRole: 'Participant',
-        joinedAt: participantData.joinedAt || Date.now()
-      };
-      
-      console.log(`📧 Sending participant joined notifications for ${participantData.name} in room ${roomId}`);
-      
-      // Always notify admin
-      try {
-        await firestoreEmailService.notifyParticipantJoined(notificationData, 'kumarnarendiran2000@gmail.com', true);
-        console.log('✅ Admin notification sent successfully');
-      } catch (adminEmailError) {
-        console.error('❌ Failed to send admin notification:', adminEmailError);
-      }
-      
-      // Notify room creator if email notifications are enabled
-      if (roomEmailConfig?.enabled && roomEmailConfig?.userEmail) {
-        try {
-          await firestoreEmailService.notifyParticipantJoined(notificationData, roomEmailConfig.userEmail, false);
-          console.log(`✅ User notification sent to ${roomEmailConfig.userEmail}`);
-        } catch (userEmailError) {
-          console.error('❌ Failed to send user notification:', userEmailError);
-        }
-      } else {
-        console.log('ℹ️ User email notifications not enabled or no email configured');
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('❌ Email notification process failed:', error);
-      throw error;
-    }
+  // EMAIL NOTIFICATIONS DISABLED
+  // static async sendParticipantJoinedEmail(roomId, participantData) {
+  //   try {
+  //     const roomRef = this.getRoomRef(roomId);
+  //     const roomSnapshot = await get(roomRef);
+  //     let roomEmailConfig = null;
+  //     if (roomSnapshot.exists()) {
+  //       const roomData = roomSnapshot.val();
+  //       roomEmailConfig = roomData.emailNotifications || null;
+  //     }
+  //     const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
+  //     const notificationData = {
+  //       roomCode: roomId,
+  //       participantName: participantData.name,
+  //       participantRole: 'Participant',
+  //       joinedAt: participantData.joinedAt || Date.now()
+  //     };
+  //     await firestoreEmailService.notifyParticipantJoined(notificationData, 'kumarnarendiran2000@gmail.com', true);
+  //     if (roomEmailConfig?.enabled && roomEmailConfig?.userEmail) {
+  //       await firestoreEmailService.notifyParticipantJoined(notificationData, roomEmailConfig.userEmail, false);
+  //     }
+  //     return true;
+  //   } catch (error) {
+  //     console.error('❌ Email notification process failed:', error);
+  //     throw error;
+  //   }
+  // }
+  static async sendParticipantJoinedEmail(_roomId, _participantData) {
+    // Email notifications disabled
+    return true;
   }
   
   /**
@@ -610,39 +523,31 @@ class RoomService {
       const participantRef = this.getParticipantRef(roomId, participantId);
       await remove(participantRef);
       
-      // Send email notifications if we have participant info (non-blocking)
-      if (participantName) {
-        (() => {
-          const sendNotifications = async () => {
-            try {
-              const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
-              
-              const participantData = {
-                roomCode: roomId,
-                participantName,
-                leftAt: Date.now(),
-                reason
-              };
-              
-              // Always notify admin
-              await firestoreEmailService.notifyParticipantLeft(participantData, 'kumarnarendiran2000@gmail.com', true);
-              
-              // Get room data to check for user email notifications
-              const roomRef = this.getRoomRef(roomId);
-              const roomSnapshot = await get(roomRef);
-              if (roomSnapshot.exists()) {
-                const roomData = roomSnapshot.val();
-                if (roomData.emailNotifications?.enabled && roomData.emailNotifications?.userEmail) {
-                  await firestoreEmailService.notifyParticipantLeft(participantData, roomData.emailNotifications.userEmail, false);
-                }
-              }
-            } catch (emailError) {
-              // Email notification failed - continue with participant removal
-            }
-          };
-          sendNotifications(); // Fire and forget
-        })();
-      }
+      // EMAIL NOTIFICATIONS DISABLED
+      // if (participantName) {
+      //   (() => {
+      //     const sendNotifications = async () => {
+      //       try {
+      //         const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
+      //         const participantData = { roomCode: roomId, participantName, leftAt: Date.now(), reason };
+      //         // Always notify admin
+      //         await firestoreEmailService.notifyParticipantLeft(participantData, 'kumarnarendiran2000@gmail.com', true);
+      //         // Notify room creator if enabled
+      //         const roomRef = this.getRoomRef(roomId);
+      //         const roomSnapshot = await get(roomRef);
+      //         if (roomSnapshot.exists()) {
+      //           const roomData = roomSnapshot.val();
+      //           if (roomData.emailNotifications?.enabled && roomData.emailNotifications?.userEmail) {
+      //             await firestoreEmailService.notifyParticipantLeft(participantData, roomData.emailNotifications.userEmail, false);
+      //           }
+      //         }
+      //       } catch (emailError) {
+      //         // Email notification failed - continue with participant removal
+      //       }
+      //     };
+      //     sendNotifications();
+      //   })();
+      // }
       
       return true;
     } catch (error) {
@@ -715,40 +620,37 @@ class RoomService {
       
       await set(participantRef, updatedData);
       
-      // Send email notification for role change (non-blocking)
-      (() => {
-        const sendNotifications = async () => {
-          try {
-            const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
-            
-            const roleChangeData = {
-              roomCode: roomId,
-              participantName: currentData.name,
-              newRole: roleUpdate.isHost 
-                ? (roleUpdate.isParticipant ? 'Host & Participant' : 'Host (Facilitator)')
-                : 'Participant',
-              changedBy,
-              changedAt: Date.now()
-            };
-            
-            // Always notify admin
-            await firestoreEmailService.notifyRoleChanged(roleChangeData, 'kumarnarendiran2000@gmail.com', true);
-            
-            // Get room data to check for user email notifications
-            const roomRef = this.getRoomRef(roomId);
-            const roomSnapshot = await get(roomRef);
-            if (roomSnapshot.exists()) {
-              const roomData = roomSnapshot.val();
-              if (roomData.emailNotifications?.enabled && roomData.emailNotifications?.userEmail) {
-                await firestoreEmailService.notifyRoleChanged(roleChangeData, roomData.emailNotifications.userEmail, false);
-              }
-            }
-          } catch (emailError) {
-            // Email notification failed - continue with role update
-          }
-        };
-        sendNotifications(); // Fire and forget
-      })();
+      // EMAIL NOTIFICATIONS DISABLED
+      // (() => {
+      //   const sendNotifications = async () => {
+      //     try {
+      //       const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
+      //       const roleChangeData = {
+      //         roomCode: roomId,
+      //         participantName: currentData.name,
+      //         newRole: roleUpdate.isHost
+      //           ? (roleUpdate.isParticipant ? 'Host & Participant' : 'Host (Facilitator)')
+      //           : 'Participant',
+      //         changedBy,
+      //         changedAt: Date.now()
+      //       };
+      //       // Always notify admin
+      //       await firestoreEmailService.notifyRoleChanged(roleChangeData, 'kumarnarendiran2000@gmail.com', true);
+      //       // Notify room creator if enabled
+      //       const roomRef = this.getRoomRef(roomId);
+      //       const roomSnapshot = await get(roomRef);
+      //       if (roomSnapshot.exists()) {
+      //         const roomData = roomSnapshot.val();
+      //         if (roomData.emailNotifications?.enabled && roomData.emailNotifications?.userEmail) {
+      //           await firestoreEmailService.notifyRoleChanged(roleChangeData, roomData.emailNotifications.userEmail, false);
+      //         }
+      //       }
+      //     } catch (emailError) {
+      //       // Email notification failed - continue with role update
+      //     }
+      //   };
+      //   sendNotifications();
+      // })();
       
       return true;
     } catch (error) {

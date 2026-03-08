@@ -82,17 +82,17 @@ export const createRoom = async (hostName, hostParticipates = true, emailConfig 
   // Create room data
   const roomData = createRoomData(roomCode, hostSessionId, hostName, hostParticipates);
   
-  // Add email configuration to room data if provided
-  if (emailConfig?.enabled) {
-    roomData.emailNotifications = {
-      enabled: true,
-      userEmail: emailConfig.userEmail || null,
-      notifyParticipantJoins: true,
-      notifyParticipantLeaves: true,
-      notifyRoomDeletion: true
-    };
-  }
-  
+  // EMAIL NOTIFICATIONS DISABLED - email config ignored
+  // if (emailConfig?.enabled) {
+  //   roomData.emailNotifications = {
+  //     enabled: true,
+  //     userEmail: emailConfig.userEmail || null,
+  //     notifyParticipantJoins: true,
+  //     notifyParticipantLeaves: true,
+  //     notifyRoomDeletion: true
+  //   };
+  // }
+
   // Save room to Firebase
   await set(ref(db, `rooms/${roomCode}`), roomData);
   
@@ -109,32 +109,29 @@ export const createRoom = async (hostName, hostParticipates = true, emailConfig 
     isParticipant: hostParticipates
   });
   
-  // Send email notifications for room creation (non-blocking for better performance)
-  (() => {
-    const sendNotifications = async () => {
-      try {
-        const emailData = {
-          roomCode,
-          hostName: hostName.trim(),
-          hostRole: hostParticipates ? 'Host & Participant' : 'Facilitator Only',
-          createdAt: Date.now()
-        };
-        
-        // Always notify admin (with admin-specific content)
-        const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
-        await firestoreEmailService.notifyRoomCreated(emailData, 'kumarnarendiran2000@gmail.com', true);
-        
-        // Notify user if they opted in (with user-friendly content)
-        if (emailConfig?.enabled && emailConfig?.userEmail) {
-          const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
-          await firestoreEmailService.notifyRoomCreated(emailData, emailConfig.userEmail, false);
-        }
-      } catch (error) {
-        // Email notification failed - continue with room creation
-      }
-    };
-    sendNotifications(); // Fire and forget
-  })();
+  // EMAIL NOTIFICATIONS DISABLED
+  // (() => {
+  //   const sendNotifications = async () => {
+  //     try {
+  //       const emailData = {
+  //         roomCode,
+  //         hostName: hostName.trim(),
+  //         hostRole: hostParticipates ? 'Host & Participant' : 'Facilitator Only',
+  //         createdAt: Date.now()
+  //       };
+  //       // Always notify admin
+  //       const firestoreEmailService = (await import('../services/firestoreEmailService.js')).default;
+  //       await firestoreEmailService.notifyRoomCreated(emailData, 'kumarnarendiran2000@gmail.com', true);
+  //       // Notify user if they opted in
+  //       if (emailConfig?.enabled && emailConfig?.userEmail) {
+  //         await firestoreEmailService.notifyRoomCreated(emailData, emailConfig.userEmail, false);
+  //       }
+  //     } catch (error) {
+  //       // Email notification failed - continue with room creation
+  //     }
+  //   };
+  //   sendNotifications();
+  // })();
   
   return { roomCode, sessionId: hostSessionId };
 };

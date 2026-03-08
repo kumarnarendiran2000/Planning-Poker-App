@@ -6,7 +6,7 @@ import useVoting from '../../hooks/useVoting';
 import RoomService from '../../services/roomService';
 import { countVotes } from '../../utils/statistics';
 import { useAlertModal } from '../modals/AlertModal';
-import { isUserParticipant, clearRoomData } from '../../utils/localStorage';
+import { isUserParticipant, clearRoomData, markRoomLeaving } from '../../utils/localStorage';
 import { useFeedback } from '../../hooks/useFeedback';
 
 // Refactored sub-components
@@ -172,22 +172,23 @@ const Room = () => {
       // Host must transfer role first
       setShowLeaveModal(true);
     } else {
-      // Regular participant - show confirmation
+      // Regular participant — confirm then leave
       showConfirm({
-        title: '🚪 Leave Room',
+        title: 'Leave Room',
         message: 'Are you sure you want to leave this room?',
         okText: 'Leave',
         cancelText: 'Stay',
         onOk: async () => {
+          const loadingToast = enhancedToast.loading('Leaving room...');
           try {
-            const loadingToast = enhancedToast.loading('Leaving room...');
+            markRoomLeaving(roomId); // Suppress subscription "removed by host" toast
             await RoomService.removeParticipant(roomId, sessionId, userName, 'left');
             clearRoomData(roomId);
             enhancedToast.dismiss(loadingToast);
-            enhancedToast.success('Left room successfully');
             navigate('/');
           } catch (error) {
             console.error('Error leaving room:', error);
+            enhancedToast.dismiss(loadingToast);
             enhancedToast.error('Failed to leave room. Please try again.');
           }
         }
@@ -203,59 +204,36 @@ const Room = () => {
    */
   const handleTransferAndLeave = useCallback(async (participantId, participantName, canVote) => {
     setIsTransferring(true);
+    const hostName = participants[sessionId]?.name || 'Host';
+    const loadingToast = enhancedToast.loading(
+      participantId ? `Transferring role to ${participantName}...` : 'Leaving room...'
+    );
 
     try {
-      const hostName = participants[sessionId]?.name || 'Host';
+      markRoomLeaving(roomId); // Suppress subscription role-change & removal toasts
 
       if (participantId) {
-        // Transfer role to selected participant
+        // Transfer role then remove self
         await RoomService.promoteToHost(roomId, participantId, canVote, hostName);
         await RoomService.demoteFromHost(roomId, sessionId, hostName);
-
-        // Show success for transfer
-        enhancedToast.success(`Transferred host role to ${participantName}`);
+        await RoomService.removeParticipant(roomId, sessionId, hostName, 'left');
+      } else {
+        // No other participants — delete the room
+        await RoomService.deleteRoom(roomId, hostName);
       }
 
-      // Close modal and show leave confirmation
+      clearRoomData(roomId);
+      enhancedToast.dismiss(loadingToast);
       setShowLeaveModal(false);
       setIsTransferring(false);
-
-      // Show final confirmation to leave
-      showConfirm({
-        title: '🚪 Leave Room',
-        message: participantId
-          ? `Role transferred to ${participantName}. Are you sure you want to leave now?`
-          : 'No other participants. The room will be deleted. Are you sure?',
-        okText: 'Leave',
-        cancelText: 'Stay',
-        onOk: async () => {
-          try {
-            const loadingToast = enhancedToast.loading('Leaving room...');
-
-            if (!participantId) {
-              // No other participants - delete the room
-              await RoomService.deleteRoom(roomId, hostName);
-            } else {
-              // Just remove self as participant
-              await RoomService.removeParticipant(roomId, sessionId, hostName, 'left');
-            }
-
-            clearRoomData(roomId);
-            enhancedToast.dismiss(loadingToast);
-            enhancedToast.success('Left room successfully');
-            navigate('/');
-          } catch (error) {
-            console.error('Error leaving room:', error);
-            enhancedToast.error('Failed to leave room. Please try again.');
-          }
-        }
-      });
+      navigate('/');
     } catch (error) {
-      console.error('Error transferring role:', error);
-      enhancedToast.error('Failed to transfer role. Please try again.');
+      console.error('Error leaving room:', error);
+      enhancedToast.dismiss(loadingToast);
+      enhancedToast.error('Failed to leave room. Please try again.');
       setIsTransferring(false);
     }
-  }, [roomId, sessionId, participants, showConfirm, navigate]);
+  }, [roomId, sessionId, participants, navigate]);
 
   // Show loading state
   if (loading) {

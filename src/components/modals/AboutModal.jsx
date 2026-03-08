@@ -182,14 +182,6 @@ const AboutModal = ({ isOpen, onClose }) => {
                 </div>
                 
                 <div className="flex items-start gap-3">
-                  <span className="text-xl flex-shrink-0">📧</span>
-                  <div>
-                    <h5 className="font-semibold text-gray-800 text-sm">Email Notifications</h5>
-                    <p className="text-gray-600 text-xs">Optional email alerts when participants join/leave or roles change.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
                   <span className="text-xl flex-shrink-0">🎮</span>
                   <div>
                     <h5 className="font-semibold text-gray-800 text-sm">Skip Option</h5>

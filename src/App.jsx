@@ -147,7 +147,7 @@ function Home() {
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-600">
                       <span className="text-green-500">✓</span>
-                      <span>Optional email notifications</span>
+                      <span>Share room code with your team</span>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-600">
                       <span className="text-green-500">✓</span>
@@ -213,7 +213,7 @@ function Home() {
                 { icon: '⚡', title: 'Real-time Sync', desc: 'Instant updates across all devices' },
                 { icon: '🎯', title: 'Role-Based', desc: 'Host, Participant, or Facilitator modes' },
                 { icon: '📊', title: 'Statistics', desc: 'Automatic consensus detection' },
-                { icon: '📧', title: 'Notifications', desc: 'Optional email updates' }
+                { icon: '🔒', title: 'Auto-Cleanup', desc: 'Rooms expire after 4 hours' }
               ].map((feature, idx) => (
                 <div key={idx} className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-sm hover:shadow-lg hover:bg-white transition-all duration-200">
                   <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">{feature.icon}</div>
@@ -232,7 +232,7 @@ function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
             <p className="text-sm text-gray-600">
-              © 2025 Planning Poker • Real-time Agile Estimation
+              © 2026 Planning Poker • Real-time Agile Estimation
             </p>
             <div className="flex items-center gap-4 text-sm text-gray-500">
               <span>Made with ❤️ for Agile Teams</span>

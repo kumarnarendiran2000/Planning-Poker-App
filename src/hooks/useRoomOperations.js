@@ -58,15 +58,14 @@ export const useRoomOperations = (roomId, state, navigation, alertFunctions) => 
       
       setShowNameModal(false);
       
-      // Send email notification AFTER user lands in the room (background, non-blocking)
-      if (!existingSessionId) {
-        // Use fire-and-forget for email notification
-        setTimeout(() => {
-          RoomService.sendParticipantJoinedEmail(roomId, participantData).catch(err => {
-            console.error('Failed to send join email:', err);
-          });
-        }, 1000); // Send after 1 second delay to ensure smooth UX
-      }
+      // EMAIL NOTIFICATIONS DISABLED
+      // if (!existingSessionId) {
+      //   setTimeout(() => {
+      //     RoomService.sendParticipantJoinedEmail(roomId, participantData).catch(err => {
+      //       console.error('Failed to send join email:', err);
+      //     });
+      //   }, 1000);
+      // }
     } catch (error) {
       console.error('Error joining room:', error);
       showError({

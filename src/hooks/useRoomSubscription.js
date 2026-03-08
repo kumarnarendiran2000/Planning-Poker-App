@@ -112,19 +112,25 @@ export const useRoomSubscription = (roomId, state, navigation) => {
           
           // If user was in room before but not anymore, and this isn't the initial load
           if (wasInRoom && !stillInRoom && Object.keys(prevParticipants).length > 0) {
+            // Suppress if user left voluntarily (Leave Room flow sets this marker)
+            const isLeavingVoluntarily = StorageUtils.getRoomItem('leavingRoom', roomId) === roomId;
+            if (isLeavingVoluntarily) {
+              return prevParticipants; // Leave flow handles navigation itself
+            }
+
             const now = Date.now();
-            
+
             // Prevent duplicate kicked toasts within 3 seconds
             if ((now - lastKickedToastTime.current) > 3000) {
               lastKickedToastTime.current = now;
-              
+
               // User was removed by host
-              enhancedToast.error('You have been removed by the host. Redirecting to home page...');
+              enhancedToast.error('You have been removed from the room by the host.');
             }
-            
+
             // Clear localStorage immediately
             StorageUtils.clearRoomData(roomId);
-            
+
             // Redirect after short delay to show message
             const redirectTimer = setTimeout(() => {
               navigate('/', { replace: true });
@@ -222,14 +228,15 @@ export const useRoomSubscription = (roomId, state, navigation) => {
           const canVote = currentUserData?.isParticipant !== false;
           
           if (canVote && shouldShowToast('promoted-participant')) {
-            enhancedToast.success('🎉 You are now a Host Participant! The room has been reset.', { duration: 8000 });
+            enhancedToast.success('You are now the Host Participant. The room has been reset.');
           } else if (!canVote && shouldShowToast('promoted-facilitator')) {
-            enhancedToast.success('🎉 You are now a Facilitator! The room has been reset (observer mode).', { duration: 8000 });
+            enhancedToast.success('You are now the Facilitator. The room has been reset.');
           }
         } else if (roleChanges.currentUserDemoted) {
-          // Current user was demoted (transferred their role)
-          if (shouldShowToast('demoted')) {
-            enhancedToast.success('✅ Role transferred successfully! The room has been reset.', { duration: 6000 });
+          // Suppress demotion toast if the user is in the process of leaving
+          const isLeavingVoluntarily = StorageUtils.getRoomItem('leavingRoom', roomId) === roomId;
+          if (!isLeavingVoluntarily && shouldShowToast('demoted')) {
+            enhancedToast.success('Role transferred successfully! The room has been reset.');
           }
         } else if (roleChanges.otherPromoted || roleChanges.otherDemoted) {
           // For broadcast toasts (observers), use debouncing to group updates
@@ -261,15 +268,14 @@ export const useRoomSubscription = (roomId, state, navigation) => {
               const toastKey = `transfer-${changes.otherPromoted.id}-${changes.otherDemoted.id}`;
               if (shouldShowToast(toastKey)) {
                 enhancedToast.info(
-                  `${changes.otherDemoted.name} transferred role to ${changes.otherPromoted.name} as ${changes.otherPromoted.role}. Room has been reset.`,
-                  { duration: 7000 }
+                  `${changes.otherDemoted.name} transferred host to ${changes.otherPromoted.name} (${changes.otherPromoted.role}). Room reset.`
                 );
               }
             } else if (changes.otherPromoted) {
               // Someone else got promoted (no transfer, just promotion)
               const toastKey = `other-promoted-${changes.otherPromoted.id}`;
               if (shouldShowToast(toastKey)) {
-                enhancedToast.info(`${changes.otherPromoted.name} is now a ${changes.otherPromoted.role}. Room has been reset.`, { duration: 6000 });
+                enhancedToast.info(`${changes.otherPromoted.name} is now ${changes.otherPromoted.role}. Room has been reset.`);
               }
             }
           }, 300);

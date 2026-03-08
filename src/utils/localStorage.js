@@ -47,6 +47,7 @@ export const clearRoomData = (roomId) => {
   removeRoomItem('isHost', roomId);
   removeRoomItem('isParticipant', roomId);
   removeRoomItem('deletingRoom', roomId);
+  removeRoomItem('leavingRoom', roomId);
   removeRoomItem('roomCode', roomId);
   
   // Notify that localStorage has changed
@@ -122,6 +123,16 @@ export const saveUserSession = ({ roomId, sessionId, userName, isHost, isPartici
  */
 export const markRoomDeleting = (roomId) => {
   setRoomItem('deletingRoom', roomId, roomId);
+};
+
+/**
+ * Mark a room as being left voluntarily by the current user
+ * Used to suppress "removed by host" toast in subscription
+ *
+ * @param {string} roomId - The room ID being left
+ */
+export const markRoomLeaving = (roomId) => {
+  setRoomItem('leavingRoom', roomId, roomId);
 };
 
 /**
