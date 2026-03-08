@@ -6,6 +6,7 @@ import JoinRoom from './components/JoinRoom'
 import ActiveSessions from './components/ActiveSessions'
 import Room from './components/Room/index'
 import FeedbackAnalytics from './components/admin/FeedbackAnalytics'
+import RoomHistoryPage from './pages/RoomHistoryPage'
 import AboutModal from './components/modals/AboutModal'
 import FeedbackButton from './components/common/FeedbackButton'
 import { runCleanupIfNeeded } from './services/cleanupService'
@@ -316,6 +317,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/room/:roomId" element={<Room />} />
+        <Route path="/room/:roomId/history" element={<RoomHistoryPage />} />
         <Route path="/admin/feedback" element={<FeedbackAnalyticsPage />} />
       </Routes>
     </BrowserRouter>

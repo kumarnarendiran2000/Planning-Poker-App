@@ -18,5 +18,11 @@ service cloud.firestore {
       allow read: if true; // Allow reading for analytics dashboard
       allow update, delete: if false; // Prevent modification/deletion for data integrity
     }
+
+    // Room history — rounds saved per room, deleted when room is deleted
+    match /roomHistory/{roomId}/rounds/{roundId} {
+      allow read, create, delete: if true;
+      allow update: if false;
+    }
   }
 }

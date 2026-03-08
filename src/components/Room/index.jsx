@@ -20,6 +20,8 @@ import RevealCountdown from '../common/RevealCountdown';
 import ResetLoader from '../common/ResetLoader';
 import FeedbackButton from '../common/FeedbackButton';
 import LeaveRoomModal from '../modals/LeaveRoomModal';
+import ConnectionBanner from '../common/ConnectionBanner';
+import useConnectionStatus from '../../hooks/useConnectionStatus';
 
 /**
  * Room component - the main component for a planning poker room
@@ -54,6 +56,9 @@ const Room = () => {
     userName
   } = useRoom(roomId, { showError, showConfirm, showSuccess });
 
+  // Track Firebase connection state
+  const { isOnline } = useConnectionStatus();
+
   // Use feedback hook for feedback operations
   const { getUserRole } = useFeedback();
 
@@ -68,7 +73,7 @@ const Room = () => {
     stats,
     executeReveal,
     cancelCountdown
-  } = useVoting(roomId, sessionId, participants, revealed, isHost, { showError, showConfirm, showSuccess });
+  } = useVoting(roomId, sessionId, participants, revealed, isHost, story, { showError, showConfirm, showSuccess });
 
   // Get vote counts
   const { votesSubmitted, totalParticipants } = countVotes(participants);
@@ -248,6 +253,7 @@ const Room = () => {
   // Render the room
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex flex-col">
+      <ConnectionBanner isOnline={isOnline} />
       <div className="flex-1 container mx-auto px-3 sm:px-4 md:px-6 xl:px-8 2xl:px-12 py-3 sm:py-4 md:py-6 min-h-screen max-w-none">
         <div className="bg-white/90 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-2xl p-3 sm:p-4 md:p-6 lg:p-8 xl:p-10 2xl:p-12 min-h-[calc(100vh-3rem)] sm:min-h-[calc(100vh-4rem)] flex flex-col">
 

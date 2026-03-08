@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Room header component containing title and room information
- * Displays the room title, room ID, host badge, participant count, and leave button
+ * Displays the room title, room ID, host badge, participant count, leave button, and history button
  */
 const RoomHeader = ({ roomId, isHost, isParticipant = true, participantCount, onLeaveRoom }) => {
   const [copied, setCopied] = useState(false);
+  const navigate = useNavigate();
 
   const handleCopyRoomCode = async () => {
     try {
       await navigator.clipboard.writeText(roomId);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       // Fallback for older browsers
       const textArea = document.createElement('textarea');
@@ -35,7 +37,7 @@ const RoomHeader = ({ roomId, isHost, isParticipant = true, participantCount, on
         </h1>
       </div>
 
-      {/* Room Details Section with improved typography */}
+      {/* Room Details Section */}
       <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-1">
         <div className="flex items-center gap-1 px-4 py-2 sm:px-6 sm:py-3 bg-purple-100 text-purple-700 rounded-full text-sm sm:text-base font-medium shadow-sm border border-purple-200 hover:shadow-md">
           <span>Room: {roomId}</span>
@@ -71,11 +73,23 @@ const RoomHeader = ({ roomId, isHost, isParticipant = true, participantCount, on
           </span>
         )}
 
-        {/* Leave Room Button */}
+        {/* History Button */}
+        <button
+          onClick={() => navigate(`/room/${roomId}/history`)}
+          className="px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white rounded-full text-sm sm:text-base font-medium shadow-sm hover:shadow-md border border-amber-300 transition-all duration-200 flex items-center gap-1.5"
+          title="View round history"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="hidden sm:inline">History</span>
+        </button>
+
+        {/* Leave Room Button — red */}
         {onLeaveRoom && (
           <button
             onClick={onLeaveRoom}
-            className="px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-red-50 hover:to-red-100 text-gray-600 hover:text-red-600 rounded-full text-sm sm:text-base font-medium shadow-sm border border-gray-300 hover:border-red-300 transition-all duration-200 flex items-center gap-1.5"
+            className="px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-full text-sm sm:text-base font-medium shadow-sm hover:shadow-md border border-red-400 transition-all duration-200 flex items-center gap-1.5"
             title="Leave this room"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -22,15 +22,9 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
     const textarea = textareaRef.current;
     if (!textarea) return;
 
-    const handleWheel = (e) => {
-      // Allow default scroll behavior
-    };
+    const handleWheel = () => {};
+    const handleTouchMove = () => {};
 
-    const handleTouchMove = (e) => {
-      // Allow default touch behavior
-    };
-
-    // Add passive event listeners
     textarea.addEventListener('wheel', handleWheel, { passive: true });
     textarea.addEventListener('touchmove', handleTouchMove, { passive: true });
 
@@ -42,39 +36,35 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
 
   const handleSave = async () => {
     if (!isHost || !onStoryUpdate) return;
-    
+
     const trimmedStory = localStory.trim();
     const originalStory = (storyName || '').trim();
-    
-    // Determine the action type (only one condition should be true)
+
     const isClearingStory = trimmedStory === '' && originalStory !== '';
     const isAddingNewStory = originalStory === '' && trimmedStory !== '';
     const isUpdatingStory = originalStory !== '' && trimmedStory !== '' && originalStory !== trimmedStory;
     const isNoChange = originalStory === trimmedStory;
-    
-    // Skip update if no changes
+
     if (isNoChange) {
       setIsEditing(false);
       return;
     }
-    
+
     setIsSaving(true);
     try {
       await onStoryUpdate(trimmedStory);
       setIsEditing(false);
-      
-      // Show single appropriate toast with minimal animation for VDI optimization
+
       if (isClearingStory) {
-        enhancedToast.success('Story cleared 🗑️');
+        enhancedToast.success('Story cleared');
       } else if (isAddingNewStory) {
-        enhancedToast.success('Story added 📋');
+        enhancedToast.success('Story added');
       } else if (isUpdatingStory) {
-        enhancedToast.success('Story updated ✏️');
+        enhancedToast.success('Story updated');
       }
     } catch (error) {
       console.error('Error updating story:', error);
       enhancedToast.error('Failed to save story. Please try again.');
-      // Revert to original value on error
       setLocalStory(storyName || '');
     } finally {
       setIsSaving(false);
@@ -85,10 +75,8 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
     const hadChanges = localStory.trim() !== (storyName || '').trim();
     setLocalStory(storyName || '');
     setIsEditing(false);
-    
-    // Show feedback if user had unsaved changes
     if (hadChanges) {
-      enhancedToast.info('Changes cancelled 🚫');
+      enhancedToast.info('Changes cancelled');
     }
   };
 
@@ -101,7 +89,7 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
     }
   };
 
-  // For non-hosts, show read-only view
+  // Participant view (read-only)
   if (!isHost) {
     return (
       <div className="w-full bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-300 rounded-xl p-4 sm:p-5 shadow-md">
@@ -116,10 +104,10 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
             </div>
           </div>
         ) : (
-          <div className="w-full p-3 sm:p-4 bg-white border-2 border-dashed border-gray-300 rounded-lg text-sm sm:text-base text-gray-500 min-h-[50px] sm:min-h-[60px] flex items-center justify-center italic">
-            <span className="flex items-center gap-2">
-              <span className="text-base opacity-50">📝</span>
-              <span>No story specified</span>
+          <div className="w-full p-3 sm:p-4 bg-amber-50 border-2 border-dashed border-amber-300 rounded-lg text-sm sm:text-base min-h-[50px] sm:min-h-[60px] flex items-center justify-center">
+            <span className="flex items-center gap-2 text-amber-700 font-medium">
+              <span className="text-base">⏳</span>
+              <span>Waiting for host to add a story...</span>
             </span>
           </div>
         )}
@@ -127,27 +115,44 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
     );
   }
 
-  // For hosts, show editable view
+  // Host view (editable)
+  const isEmpty = !storyName;
+
   return (
-    <div className="w-full bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-300 rounded-xl p-4 sm:p-5 shadow-md">
+    <div className={`w-full rounded-xl p-4 sm:p-5 shadow-md border-2 transition-colors duration-200 ${
+      isEmpty && !isEditing
+        ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-400'
+        : 'bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-300'
+    }`}>
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">📖</span>
-          <h3 className="text-sm sm:text-base font-bold text-indigo-900">Story / User Story</h3>
+          <span className="text-2xl">{isEmpty && !isEditing ? '⚠️' : '📖'}</span>
+          <div>
+            <h3 className={`text-sm sm:text-base font-bold ${isEmpty && !isEditing ? 'text-amber-800' : 'text-indigo-900'}`}>
+              Story / User Story
+            </h3>
+            {isEmpty && !isEditing && (
+              <p className="text-xs text-amber-600 font-medium">Enter a story name before voting!</p>
+            )}
+          </div>
         </div>
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
             disabled={disabled}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 shadow-sm"
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-white text-xs sm:text-sm font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 shadow-sm ${
+              isEmpty
+                ? 'bg-amber-500 hover:bg-amber-600'
+                : 'bg-emerald-500 hover:bg-emerald-600'
+            }`}
           >
             <span>✏️</span>
-            <span className="hidden sm:inline">Edit Story</span>
-            <span className="sm:hidden">Edit</span>
+            <span className="hidden sm:inline">{isEmpty ? 'Add Story' : 'Edit Story'}</span>
+            <span className="sm:hidden">{isEmpty ? 'Add' : 'Edit'}</span>
           </button>
         )}
       </div>
-      
+
       {isEditing ? (
         <div className="w-full space-y-3">
           <div className="relative">
@@ -195,8 +200,12 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
           </div>
         </div>
       ) : (
-        <div 
-          className="w-full p-3 sm:p-4 bg-white border-2 border-indigo-200 rounded-lg cursor-pointer hover:bg-indigo-50 hover:border-indigo-400 hover:shadow-md min-h-[50px] sm:min-h-[60px] flex items-center transition-all duration-200 shadow-sm"
+        <div
+          className={`w-full p-3 sm:p-4 rounded-lg cursor-pointer min-h-[50px] sm:min-h-[60px] flex items-center transition-all duration-200 shadow-sm border-2 ${
+            isEmpty
+              ? 'bg-amber-50 border-dashed border-amber-400 hover:bg-amber-100 hover:border-amber-500'
+              : 'bg-white border-indigo-200 hover:bg-indigo-50 hover:border-indigo-400 hover:shadow-md'
+          }`}
           onClick={() => !disabled && setIsEditing(true)}
         >
           {storyName ? (
@@ -205,10 +214,9 @@ const StoryInput = ({ storyName, isHost, onStoryUpdate, disabled = false }) => {
               <span className="ml-2 text-indigo-400">✏️</span>
             </div>
           ) : (
-            <div className="w-full text-sm sm:text-base text-gray-500 italic flex items-center justify-center gap-2">
-              <span className="text-base opacity-50">📝</span>
-              <span>Click to add story name or number...</span>
-              <span className="text-indigo-400">✨</span>
+            <div className="w-full text-sm sm:text-base flex items-center justify-center gap-2 text-amber-700 font-semibold">
+              <span className="text-base">📝</span>
+              <span>Click to add a story name or number...</span>
             </div>
           )}
         </div>

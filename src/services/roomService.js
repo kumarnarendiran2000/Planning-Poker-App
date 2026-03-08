@@ -340,6 +340,11 @@ class RoomService {
         await Promise.all(participantPromises);
       }
       
+      // Delete Firestore history for this room (fire-and-forget)
+      import('./historyService.js').then(({ default: historyService }) => {
+        historyService.deleteRoomHistory(roomId).catch(console.error);
+      });
+
       // Finally remove the entire room
       const roomRef = this.getRoomRef(roomId);
       return await remove(roomRef);

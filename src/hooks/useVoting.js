@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import RoomService from '../services/roomService';
 import { calculateStatistics } from '../utils/statistics';
 import enhancedToast from '../utils/enhancedToast.jsx';
+import historyService from '../services/historyService';
 
 /**
  * Custom hook for managing voting operations
@@ -14,9 +15,9 @@ import enhancedToast from '../utils/enhancedToast.jsx';
  * @param {Object} alertFunctions - Alert functions from useAlertModal
  * @returns {Object} Voting state and operations
  */
-const useVoting = (roomId, sessionId, participants, revealed, isHost, alertFunctions) => {
+const useVoting = (roomId, sessionId, participants, revealed, isHost, story, alertFunctions) => {
   const [vote, setVote] = useState(null);
-  const { showError, showConfirm, showSuccess } = alertFunctions;
+  const { showError, showConfirm } = alertFunctions;
 
   /**
    * Update the local vote state based on participant data
@@ -159,6 +160,9 @@ const useVoting = (roomId, sessionId, participants, revealed, isHost, alertFunct
     try {
       await RoomService.revealVotes(roomId);
       await RoomService.stopRevealCountdown(roomId);
+      // Save round to Firestore history (fire-and-forget)
+      const currentStats = calculateStatistics(participants, true);
+      historyService.saveRound(roomId, { story, participants, stats: currentStats }).catch(console.error);
     } catch (error) {
       console.error('Error revealing votes:', error);
       showError({
